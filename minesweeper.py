@@ -32,7 +32,7 @@ class Box(pygame.sprite.Sprite):
 def main():
     #display
 
-    pygame.display.set_caption("basic sushi")
+    pygame.display.set_caption("Minesweeper")
 
     #entities
     background=pygame.Surface(screen.get_size())
@@ -89,13 +89,13 @@ def main():
                 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 
-                pressed1, pressed2, pressed3 = pygame.mouse.get_pressed()
+                leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
                 
                 boxClicked = pygame.sprite.spritecollide(mouse, boxGroup, False)
                 
                 for box in boxClicked:
                     
-                    if pressed1:
+                    if leftClick:
                     
                         print(box.isBomb)
                         
@@ -107,7 +107,7 @@ def main():
                             
                             box.kill()
                             
-                    if pressed3:
+                    if rightClick:
                         
                         box.image = pygame.image.load("images/flagged.png").convert_alpha()
                 
