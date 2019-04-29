@@ -1,39 +1,28 @@
-from random import choices
+from random import randint
+
+BOMB = '#'
+SPACE = ' '
 
 def generateBombs(numRows, numCols, numBombs):
     
-    bombs = 0
     boxList = []
-    
-    # optimal ratio for bomb generation
-    emptyRatio = ((numRows * numCols) - numBombs) / 100
-    bombRatio = 1 - emptyRatio
+    bombsInGrid = 0
     
     for r in range(numRows):
-    
-        rowList = []  
-    
-        for c in range(numCols):
             
-            item = choices(['.', '@'], [emptyRatio, bombRatio], k=1)[0]
-            rowList.append(item)
-            
-            if item == '@':
-                
-                bombs += 1         
-            
-        boxList.append(rowList)
-       
-    print("Num Bombs Generated: " + str(bombs))
-    
-    if bombs == numBombs:
+        boxList.append([SPACE] * numCols)
         
-        return boxList
-    
-    else: 
+    while bombsInGrid < numBombs:
         
-        return generateBombs(numRows, numCols, numBombs)
-
+        randRow = randint(0, numRows - 1)
+        randCol = randint(0, numCols - 1)
+        
+        if not boxList[randRow][randCol] == BOMB:
+            
+            boxList[randRow][randCol] = BOMB
+            bombsInGrid += 1
+    
+    return boxList
 
 def addNums(boxList, numRows, numCols):
     
@@ -41,65 +30,71 @@ def addNums(boxList, numRows, numCols):
         
         for col in range(numCols):
             
-            if boxList[row][col] != '@':
+            # if current box not a bomb, counts all surrounding bomb instances
+            if boxList[row][col] != BOMB:
             
-                string = ''
+                icons = ''
             
+                # top row
                 if row == 0:
                     
-                    string += countCols(numCols, boxList, row, col) + countCols(numCols, boxList, row + 1, col)
+                    icons += countCols(numCols, boxList, row, col) + countCols(numCols, boxList, row + 1, col)
                 
+                # bottom row
                 elif row == numRows - 1:
                 
-                    string += countCols(numCols, boxList, row - 1, col) + countCols(numCols, boxList, row, col)
+                    icons += countCols(numCols, boxList, row - 1, col) + countCols(numCols, boxList, row, col)
             
+                # middle rows
                 else:
                     
-                    string += countCols(numCols, boxList, row - 1, col) + countCols(numCols, boxList, row, col) + countCols(numCols, boxList, row + 1, col)
+                    icons += countCols(numCols, boxList, row - 1, col) + countCols(numCols, boxList, row, col) + countCols(numCols, boxList, row + 1, col)
                     
-                boxList[row][col] = str(string.count('@'))
+                boxList[row][col] = str(icons.count(BOMB))
     
 def countCols(numCols, boxList, r, c):
         
-    string = '' 
+    icons = '' 
         
+    # top col 
     if c == 0:
         
-        string += boxList[r][c] + boxList[r][c + 1]
-        
+        icons += boxList[r][c] + boxList[r][c + 1]
+     
+    # bottom col
     elif c == numCols - 1:
         
-        string += boxList[r][c - 1] + boxList[r][c]
-        
+        icons += boxList[r][c - 1] + boxList[r][c]
+      
+    # middle cols
     else:
         
-        string += boxList[r][c - 1] + boxList[r][c] + boxList[r][c + 1]
+        icons += boxList[r][c - 1] + boxList[r][c] + boxList[r][c + 1]
 
-    return string
+    return icons
+
+def printGrid(boxList, numRows, numCols):
     
+    print("Printing box list:")
+    for r in range(numRows):
+        
+        for c in range(numCols):
+            
+            print(boxList[r][c], end='    ')
+            
+        print("\n")
+     
 def main():
     
-    boxList = generateBombs(10, 10, 10)
+    numRows = 10
+    numCols = 10
+    numBombs = 10
     
-    print("Printing box list:")
-    for r in range(10):
-        
-        for c in range(10):
-            
-            print(boxList[r][c], end='    ')
-            
-        print("\n")
+    boxList = generateBombs(numRows, numCols, numBombs)
+    printGrid(boxList, numRows, numCols)
     
-    addNums(boxList, 10, 10)
-
-    print("Printing box list:")
-    for r in range(10):
-        
-        for c in range(10):
-            
-            print(boxList[r][c], end='    ')
-            
-        print("\n")
+    addNums(boxList, numRows, numCols)
+    printGrid(boxList, numRows, numCols)
 
 if __name__ == "__main__":
     
