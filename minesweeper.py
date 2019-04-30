@@ -1,4 +1,4 @@
-# import and initialize
+"""Creates the main entry point and center for all game functionality."""
 import pygame
 import random
 import MineField
@@ -51,7 +51,6 @@ def main():
     numRow = 10
 
     field = MineField.MineField(numRow, numCol)
-    print(repr(field))
 
     for r in range(numRow):
         x = 0
