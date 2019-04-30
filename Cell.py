@@ -6,6 +6,7 @@ class Cell:
         self.y: int = y
         self.mine_count = 0
         self.mine: bool = False
+        self.flag: bool = False
 
     def __repr__(self):
         if self.mine:
@@ -24,3 +25,9 @@ class Cell:
 
     def set_mine(self) -> None:
         self.mine = True
+
+    def is_flag(self) -> None:
+        return self.flag
+
+    def set_flag(self, flag) -> None:
+        self.flag = flag

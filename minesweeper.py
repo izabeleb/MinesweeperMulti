@@ -1,7 +1,7 @@
 # import and initialize
 import pygame
-import random
 import MineField
+import Cell
 
 pygame.init()
 
@@ -27,7 +27,8 @@ class Box(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("images/defaultBox.png").convert_alpha()
         self.rect = self.image.get_rect()
-        self.coords = coords
+        self.coords: tuple = coords
+        self.clicked: bool = False
         super().__init__()
 
 
@@ -83,22 +84,28 @@ def main():
                 boxClicked = pygame.sprite.spritecollide(mouse, boxGroup,
                                                          False)
                 for box in boxClicked:
-                    
-                    
-                    if leftClick:
-                        
-                        if field.get_cell_at(*box.coords).is_mine():
-                            
+                    cell: Cell = field.get_cell_at(*box.coords)
 
+                    if leftClick and not box.clicked:
+                        box.clicked = True
+                        if cell.is_mine():
                             box.image = pygame.image.load(
                                 "images/bomb.png").convert_alpha()
                         else:
-                            
-                            box.image = pygame.image.load("images/" + str(field.get_cell_at(*box.coords)) + ".png").convert_alpha()
+                            box.image = pygame.image.load(
+                                f"images/{repr(cell)}.png").convert_alpha()
                             
                     if rightClick:
-                        box.image = pygame.image.load(
-                            "images/flagged.png").convert_alpha()
+                        if box.clicked and not cell.is_flag():
+                            continue
+                        cell.set_flag(not cell.is_flag())
+                        box.clicked = not box.clicked
+                        if cell.flag:
+                            box.image = pygame.image.load(
+                                "images/flagged.png").convert_alpha()
+                        else:
+                            box.image = pygame.image.load(
+                                "images/defaultBox.png").convert_alpha()
 
         # move the fish; check boundaries
 
