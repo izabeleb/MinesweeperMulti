@@ -83,13 +83,19 @@ def main():
                 boxClicked = pygame.sprite.spritecollide(mouse, boxGroup,
                                                          False)
                 for box in boxClicked:
+                    
+                    
                     if leftClick:
+                        
                         if field.get_cell_at(*box.coords).is_mine():
-                            print("Filling image")
+                            
+
                             box.image = pygame.image.load(
                                 "images/bomb.png").convert_alpha()
                         else:
-                            box.kill()
+                            
+                            box.image = pygame.image.load("images/" + str(field.get_cell_at(*box.coords)) + ".png").convert_alpha()
+                            
                     if rightClick:
                         box.image = pygame.image.load(
                             "images/flagged.png").convert_alpha()
