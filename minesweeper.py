@@ -1,7 +1,9 @@
-#import and initialize
-import pygame, random
-pygame.init()
+# import and initialize
+import pygame
+import random
+import MineField
 
+pygame.init()
 
 screen = pygame.display.set_mode((640, 480))
 
@@ -17,15 +19,15 @@ class Mouse(pygame.sprite.Sprite):
         pos = pygame.mouse.get_pos()
         self.rect.centerx = pos[0]
         self.rect.centery = pos[1]
-            
-        
+
+
 class Box(pygame.sprite.Sprite):
-    
-    def __init__(self, size):
+
+    def __init__(self, size, coords: tuple) -> None:
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("images/defaultBox.png").convert_alpha()
         self.rect = self.image.get_rect()
-        self.isBomb = random.choice((True, False))
+        self.coords = coords
         super().__init__()
 
 
@@ -34,41 +36,39 @@ def main():
     pygame.display.set_caption("Minesweeper")
 
     # entities
-    background=pygame.Surface(screen.get_size())
+    background = pygame.Surface(screen.get_size())
     background.fill((0, 255, 0))
     screen.blit(background, (0, 0))
 
     mouse = Mouse()
     mouseGroup = pygame.sprite.Group(mouse)
-    
+
     boxes = []
     boxSize = 30
     x = 0
     y = 0
     numCol = 10
     numRow = 10
+
+    field = MineField.MineField(numRow, numCol)
+    print(repr(field))
+
     for r in range(numRow):
-        
         x = 0
-        
         for c in range(numCol):
-        
-            box = Box(boxSize)
+            box = Box(boxSize, (r, c))
             box.rect.left = x
             box.rect.top = y
-            
             boxes.append(box)
-            
             x += boxSize
-        
+
         y += boxSize
-        
-        
+
     boxGroup = pygame.sprite.Group(boxes)
-    
+
     sprites = [boxGroup, mouseGroup]
 
-    #assign
+    # assign
     clock = pygame.time.Clock()
     keepGoing = True
 
@@ -80,26 +80,28 @@ def main():
                 keepGoing = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
-                boxClicked = pygame.sprite.spritecollide(mouse, boxGroup, False)
+                boxClicked = pygame.sprite.spritecollide(mouse, boxGroup,
+                                                         False)
                 for box in boxClicked:
                     if leftClick:
-                        print(box.isBomb)
-                        if box.isBomb:
+                        if field.get_cell_at(*box.coords).is_mine():
                             print("Filling image")
-                            box.image = pygame.image.load("images/bomb.png").convert_alpha()
+                            box.image = pygame.image.load(
+                                "images/bomb.png").convert_alpha()
                         else:
                             box.kill()
                     if rightClick:
-                        box.image = pygame.image.load("images/flagged.png").convert_alpha()
+                        box.image = pygame.image.load(
+                            "images/flagged.png").convert_alpha()
 
-        #move the fish; check boundaries
-        
+        # move the fish; check boundaries
+
         for spriteGroup in sprites:
             spriteGroup.clear(screen, background)
             spriteGroup.update()
             spriteGroup.draw(screen)
 
-        #refresh
+        # refresh
         pygame.display.flip()
 
     pygame.quit()
