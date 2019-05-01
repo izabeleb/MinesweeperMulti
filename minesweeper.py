@@ -90,7 +90,7 @@ def get_open_cells(field: MineField, cell: 'Cell') -> list:
     open_cells.append(cell)
 
     if cell.is_flag() or not field.cell_is_safe(cell):
-        return list()
+        return [cell]
 
     for c in field.surrounding_cells(cell):
         open_cells.append(c)
@@ -190,6 +190,10 @@ def main():
     clock = pygame.time.Clock()
     keepGoing = True
 
+    bomb_image: str = "images/bomb.png"
+    flag_image: str = "images/flagged.png"
+    box_image: str = "images/defaultBox.png"
+
     while keepGoing:
         clock.tick(30)
 
@@ -200,6 +204,10 @@ def main():
                 leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
                 boxClicked: Box = pygame.sprite.spritecollide(mouse, boxGroup,
                                                               False)
+                # Something nt a box is clicked
+                if not boxClicked:
+                    continue
+
                 if leftClick:
                     cell: 'Cell' = field.get_cell_at(*boxClicked[0].coords)
                     open_cells: list = get_open_cells(field, cell)
@@ -212,27 +220,48 @@ def main():
                 for box in boxes_affected:
                     cell: 'Cell' = field.get_cell_at(*box.coords)
 
-                    if leftClick and not cell.is_clicked():
+                    if leftClick and not cell.is_flag() and not \
+                            cell.is_clicked():
                         cell.set_clicked(True)
                         if cell.is_mine():
                             box.image = pygame.image.load(
-                                "images/bomb.png").convert_alpha()
+                                bomb_image).convert_alpha()
                         else:
                             box.image = pygame.image.load(
                                 f"images/{repr(cell)}.png").convert_alpha()
-                            
+
                     if rightClick:
                         if cell.is_clicked() and not cell.is_flag():
                             continue
                         cell.set_flag(not cell.is_flag())
                         cell.set_clicked(not cell.is_clicked())
 
-                        if cell.is_flag:
+                        if cell.is_flag():
                             box.image = pygame.image.load(
-                                "images/flagged.png").convert_alpha()
+                                flag_image).convert_alpha()
                         else:
                             box.image = pygame.image.load(
-                                "images/defaultBox.png").convert_alpha()
+                                box_image).convert_alpha()
+
+                    # if leftClick and not cell.is_clicked():
+                    #     cell.set_clicked(True)
+                    #     if cell.is_mine():
+                    #         box.image = pygame.image.load(
+                    #             "images/bomb.png").convert_alpha()
+                    #     else:
+                    #         box.image = pygame.image.load(
+                    #             f"images/{repr(cell)}.png").convert_alpha()
+                    #
+                    # if rightClick:
+                    #     cell.set_flag(not cell.is_flag())
+                    #     cell.set_clicked(not cell.is_clicked())
+                    #
+                    #     if cell.is_flag():
+                    #         box.image = pygame.image.load(
+                    #             "images/flagged.png").convert_alpha()
+                    #     else:
+                    #         box.image = pygame.image.load(
+                    #             "images/defaultBox.png").convert_alpha()
 
                 # play again
                 if mouse.rect.colliderect(playButton.rect):

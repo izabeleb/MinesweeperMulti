@@ -88,9 +88,21 @@ class MineField:
                 yield self.get_cell_at(cell.get_row() + i, cell.get_col() + j)
 
     def cell_is_safe(self, cell: Cell) -> bool:
+        """Determine if a cell should be considered safe.
+
+        A cell is considered safe if it has an equal number of mines around it
+        as flags placed by the player.
+
+        Args:
+            cell (Cell): the cell to test for safety.
+
+        Returns:
+            (bool): True is safe, False oterwise.
+        """
         if cell.get_mine_count() == 0:
             return True
-
+        elif cell.is_mine():
+            return False
         mines_found: int = 0
 
         for c in self.surrounding_cells(cell):
