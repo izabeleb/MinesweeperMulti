@@ -88,6 +88,9 @@ class MineField:
                 yield self.get_cell_at(cell.get_row() + i, cell.get_col() + j)
 
     def cell_is_safe(self, cell: Cell) -> bool:
+        if cell.get_mine_count() == 0:
+            return True
+
         mines_found: int = 0
 
         for c in self.surrounding_cells(cell):

@@ -158,7 +158,6 @@ def setupGame(numCol: int = 10, numRow: int = 10):
 
     # minefield
     field = MineField.MineField(numRow, numCol)
-    print(repr(field))
 
     boxes = []
     for r in range(numRow):
