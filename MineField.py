@@ -111,6 +111,17 @@ class MineField:
 
         return cell.get_mine_count() == mines_found
 
+    def field_is_safe(self) -> bool:
+        """Check if every mine in the field has been flagged.
+
+        Returns:
+            (bool): Ture iss evey mine has been flagged, False otherwise.
+        """
+        for cell in self:
+            if cell.is_mine() and not cell.is_flag():
+                return False
+        return True
+
     def get_row(self) -> int:
         return self._max_row
 
