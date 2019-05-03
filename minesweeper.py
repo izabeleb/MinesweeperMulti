@@ -1,6 +1,7 @@
 # import and initialize
 import pygame
 import MineField
+from random import randint
 
 pygame.init()
 screen = pygame.display.set_mode((640, 480))
@@ -84,12 +85,13 @@ def get_open_cells(field: MineField, cell: 'Cell') -> list:
     Returns:
         (list): a list of all open and connected cells.
     """
+
+    if cell.is_flag() or cell.is_mine() or not field.cell_is_safe(cell):
+        return [cell]
+
     open_cells: list = list()
     cell.set_visited(True)
     open_cells.append(cell)
-
-    if cell.is_flag() or not field.cell_is_safe(cell):
-        return [cell]
 
     for c in field.surrounding_cells(cell):
         open_cells.append(c)
@@ -177,7 +179,7 @@ def main():
     numCol = numRow = 10
 
     screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes = setupGame(numCol, numRow)
-    
+    print(field)
     mouseGroup = pygame.sprite.Group(mouse)
     gameBarGroup = pygame.sprite.Group(gameBar)
     widgetGroup = pygame.sprite.Group([bombCounter, timer, playButton])
@@ -187,7 +189,8 @@ def main():
     
     # assign
     clock = pygame.time.Clock()
-    keepGoing = True
+    keepGoing: bool = True
+    first_click: bool = True
 
     bomb_image: str = "images/bomb.png"
     flag_image: str = "images/flagged.png"
@@ -200,18 +203,17 @@ def main():
             if event.type == pygame.QUIT:
                 keepGoing = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
+                replayClick = mouse.rect.colliderect(playButton.rect)
                 boxClicked: Box = pygame.sprite.spritecollide(mouse, boxGroup,
                                                               False)
-                replayClick = mouse.rect.colliderect(playButton.rect)
-                # Something nt a box is clicked
+                # Handle extraneous clicks
                 if not boxClicked and not replayClick:
                     continue
                 
                 if replayClick:
                     
                     screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes = setupGame(numCol, numRow)
-                    
+
                     mouseGroup = pygame.sprite.Group(mouse)
                     gameBarGroup = pygame.sprite.Group(gameBar)
                     widgetGroup = pygame.sprite.Group([bombCounter, timer, playButton])
@@ -219,8 +221,19 @@ def main():
     
                     sprites = [mouseGroup, gameBarGroup, widgetGroup, boxGroup]
 
+                    first_click = True
+
+                leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
+
+
+                firt_click = False
+
                 if leftClick and not replayClick:
                     cell: 'Cell' = field.get_cell_at(*boxClicked[0].coords)
+
+                    if first_click and cell.is_mine():
+                        field.move_mine(cell)
+
                     open_cells: list = get_open_cells(field, cell)
                     boxes_affected: list = [
                         cell_to_box(boxes, field, cell)for cell in open_cells
@@ -254,26 +267,6 @@ def main():
                             box.image = pygame.image.load(
                                 box_image).convert_alpha()
 
-                    # if leftClick and not cell.is_clicked():
-                    #     cell.set_clicked(True)
-                    #     if cell.is_mine():
-                    #         box.image = pygame.image.load(
-                    #             "images/bomb.png").convert_alpha()
-                    #     else:
-                    #         box.image = pygame.image.load(
-                    #             f"images/{repr(cell)}.png").convert_alpha()
-                    #
-                    # if rightClick:
-                    #     cell.set_flag(not cell.is_flag())
-                    #     cell.set_clicked(not cell.is_clicked())
-                    #
-                    #     if cell.is_flag():
-                    #         box.image = pygame.image.load(
-                    #             "images/flagged.png").convert_alpha()
-                    #     else:
-                    #         box.image = pygame.image.load(
-                    #             "images/defaultBox.png").convert_alpha()
-                    
         # update groups
 
         for spriteGroup in sprites:

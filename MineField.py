@@ -44,27 +44,27 @@ class MineField:
             randCol = randint(0, self._max_col - 1)
 
             if not self._mine_field[randRow][randCol].is_mine():
-                self._mine_field[randRow][randCol].set_mine()
-                self._increment_neighbors(randRow, randCol)
+                self._mine_field[randRow][randCol].set_mine(True)
+                self._increment_neighbors(self.get_cell_at(randRow, randCol))
                 bombsInGrid += 1
 
-    def _increment_neighbors(self, row: int, col: int) -> None:
-        """Increment the amount of bombs round the neighbor cells by one.
-        Args:
-            row (int): the row of the target cell.
-            col (int): the column of thetarget cell.
-        """
-        for i in range(-1, 2):
-            if not -1 < row + i < self._max_row:
-                continue
-            for j in range(-1, 2):
-                if i == j == 0:
-                    continue
-                if -1 < col + j < self._max_col:
-                    if self._mine_field[row + i][col + j].is_mine():
-                        continue
+    def _increment_neighbors(self, cell: Cell) -> None:
+        """Increment the amount of mines areound the target cell by one.
 
-                    self._mine_field[row + i][col + j].add_mine()
+        Args:
+            cell (Cell): the target cell.
+        """
+        for c in self.surrounding_cells(cell):
+            c.set_mine_count(c.get_mine_count() + 1)
+
+    def _decrement_neighbors(self, cell: Cell) -> None:
+        """Decrement th amount of mines around the target cell by one.
+
+        Args:
+            cell (Cell): the target cell.
+        """
+        for c in self.surrounding_cells(cell):
+            c.set_mine_count(c.get_mine_count() - 1)
 
     def surrounding_cells(self, cell: Cell) -> Cell:
         """Generator for cells surrounding the target cell.
@@ -84,7 +84,6 @@ class MineField:
             for j in range(-1, 2):
                 if i == j == 0 or not -1 < cell_col + j < self._max_col:
                     continue
-
                 yield self.get_cell_at(cell.get_row() + i, cell.get_col() + j)
 
     def cell_is_safe(self, cell: Cell) -> bool:
@@ -97,12 +96,11 @@ class MineField:
             cell (Cell): the cell to test for safety.
 
         Returns:
-            (bool): True is safe, False oterwise.
+            (bool): True is safe, False otherwise.
         """
         if cell.get_mine_count() == 0:
             return True
-        elif cell.is_mine():
-            return False
+
         mines_found: int = 0
 
         for c in self.surrounding_cells(cell):
@@ -130,3 +128,14 @@ class MineField:
 
     def get_cell_at(self, row: int, col: int) -> 'Cell':
         return self._mine_field[row][col]
+
+    def move_mine(self, cell: Cell) -> None:
+        randRow = randint(0, self._max_row - 1)
+        randCol = randint(0, self._max_col - 1)
+
+        while self._mine_field[randRow][randCol].is_mine():
+            randRow = randint(0, self._max_row - 1)
+            randCol = randint(0, self._max_col - 1)
+
+        self._mine_field[randRow][randCol].set_mine(True)
+        cell.set_mine(False)
