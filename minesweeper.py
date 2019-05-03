@@ -204,11 +204,23 @@ def main():
                 leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
                 boxClicked: Box = pygame.sprite.spritecollide(mouse, boxGroup,
                                                               False)
+                replayClick = mouse.rect.colliderect(playButton.rect)
                 # Something nt a box is clicked
-                if not boxClicked:
+                if not boxClicked and not replayClick:
                     continue
+                
+                if replayClick:
+                    
+                    screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes = setupGame(numCol, numRow)
+                    
+                    mouseGroup = pygame.sprite.Group(mouse)
+                    gameBarGroup = pygame.sprite.Group(gameBar)
+                    widgetGroup = pygame.sprite.Group([bombCounter, timer, playButton])
+                    boxGroup = pygame.sprite.Group(boxes)
+    
+                    sprites = [mouseGroup, gameBarGroup, widgetGroup, boxGroup]
 
-                if leftClick:
+                if leftClick and not replayClick:
                     cell: 'Cell' = field.get_cell_at(*boxClicked[0].coords)
                     open_cells: list = get_open_cells(field, cell)
                     boxes_affected: list = [
@@ -262,18 +274,6 @@ def main():
                     #     else:
                     #         box.image = pygame.image.load(
                     #             "images/defaultBox.png").convert_alpha()
-
-                # play again
-                if mouse.rect.colliderect(playButton.rect):
-                    
-                    screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes = setupGame(numCol, numRow)
-                    
-                    mouseGroup = pygame.sprite.Group(mouse)
-                    gameBarGroup = pygame.sprite.Group(gameBar)
-                    widgetGroup = pygame.sprite.Group([bombCounter, timer, playButton])
-                    boxGroup = pygame.sprite.Group(boxes)
-    
-                    sprites = [mouseGroup, gameBarGroup, widgetGroup, boxGroup]
                     
         # update groups
 
