@@ -191,6 +191,7 @@ def main():
     clock = pygame.time.Clock()
     keepGoing: bool = True
     first_click: bool = True
+    quick_flag: bool = False
 
     bomb_image: str = "images/bomb.png"
     flag_image: str = "images/flagged.png"
@@ -225,6 +226,11 @@ def main():
 
                 leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
 
+                if middleClick:
+                    quick_flag = not quick_flag
+
+                if quick_flag:
+                    leftClick, rightClick = rightClick, leftClick
 
                 firt_click = False
 
