@@ -17,16 +17,20 @@ class Cell:
             return repr(self._mine_count)
 
     def add_mine(self) -> None:
+        """Increment the amount of mines surrounding the cell."""
         self._mine_count += 1
 
     def get_mine_count(self) -> int:
         return self._mine_count
 
+    def set_mine_count(self, mine_count: int) -> None:
+        self._mine_count = mine_count
+
     def is_mine(self) -> bool:
         return self._mine
 
-    def set_mine(self) -> None:
-        self._mine = True
+    def set_mine(self, mine) -> None:
+        self._mine = mine
 
     def is_flag(self) -> bool:
         return self._flag

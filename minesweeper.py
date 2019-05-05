@@ -1,6 +1,7 @@
 # import and initialize
 import pygame
 import MineField
+from random import randint
 import time
 
 pygame.init()
@@ -28,38 +29,38 @@ class Box(pygame.sprite.Sprite):
     def __init__(self, size: int, coords: tuple) -> None:
         pygame.sprite.Sprite.__init__(self)
         self.size = size
-        
+
         self.defaultImg = f"{cellImageDir}/defaultBox.png"
         self.bombImg = f"{cellImageDir}/bomb.png"
         self.flagImg = f"{cellImageDir}/flagged.png"
-        
+
         self.image = pygame.transform.scale(pygame.image.load(self.defaultImg), (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect()
         self.coords: tuple = coords
         super().__init__()
-        
+
     def setDefault(self):
-        
+
         self.image = pygame.transform.scale(pygame.image.load(self.defaultImg), (self.size, self.size)).convert_alpha()
-        
+
     def setBomb(self):
-        
+
         self.image = pygame.transform.scale(pygame.image.load(self.bombImg), (self.size, self.size)).convert_alpha()
-        
+
     def setFlagged(self):
-        
+
         self.image = pygame.transform.scale(pygame.image.load(self.flagImg), (self.size, self.size)).convert_alpha()
-        
+
     def setNum(self, num: int):
-        
+
         self.image = pygame.transform.scale(pygame.image.load(f"{cellImageDir}/{num}.png"), (self.size, self.size)).convert_alpha()
 
 class GameBar(pygame.sprite.Sprite):
-    
+
     def __init__(self, screen, gameBarHeight: int) -> None:
-        
+
         pygame.sprite.Sprite.__init__(self)
-        
+
         self.image = pygame.Surface((screen.get_width(), gameBarHeight))
         self.image.fill((90,90,90))
         self.rect = self.image.get_rect()
@@ -68,23 +69,23 @@ class Digit(pygame.sprite.Sprite):
     """
     Sprite class used for the Timer and BombCounter widget sprites
     """
-    
+
     def __init__(self, w: int, h: int, left: int, top : int, value : int):
-        
+
         pygame.sprite.Sprite.__init__(self)
-        
+
         self.width = w
         self.height = h
-        
+
         self.image = self.image = pygame.transform.scale(pygame.image.load(f"{widgetImageDir}/{value}.png"), (self.width, self.height)).convert_alpha()
 
         self.rect = self.image.get_rect()
         self.rect.topleft = (left, top)
-        
+
         self.value = value
-        
+
     def changeDigit(self, value: int):
-        
+
         self.value = value
         self.image = pygame.transform.scale(pygame.image.load(f"{widgetImageDir}/{self.value}.png"), (self.width, self.height)).convert_alpha()
 
@@ -92,121 +93,121 @@ class BombCounter(pygame.sprite.Sprite):
     """
     Keeps track of the amount of bombs
     """
-    
+
     def __init__(self, w, h, digit1: Digit, digit2: Digit, digit3: Digit, bombNum) -> None:
-        
+
         pygame.sprite.Sprite.__init__(self)
-        
+
         self.image = pygame.Surface((w, h))
         self.image.fill((150,150,150))
         self.rect = self.image.get_rect()
-        
+
         self.digit1 = digit1
         self.digit2 = digit2
         self.digit3 = digit3
-        
+
         self.initialized = False
         self.bombNum = bombNum
-        
+
     def init(self):
-        
+
         self.initialized = True
-        
+
         self.digit1.changeDigit(0)
         self.digit2.changeDigit(0)
         self.digit3.changeDigit(0)
-        
+
         self.changeDigits()
-        
+
     def inc(self):
-        
+
         self.bombNum += 1
         self.changeDigits()
 
     def dec(self):
-        
+
         self.bombNum -= 1
         self.changeDigits()
 
-            
+
     def changeDigits(self):
-        
+
         strBomb = str(self.bombNum)
         print(strBomb)
-        
+
         if self.bombNum >= 100:
             self.digit1.changeDigit(strBomb[0])
             self.digit2.changeDigit(strBomb[1])
             self.digit3.changeDigit(strBomb[2])
-        
+
         elif self.bombNum >= 10:
             self.digit2.changeDigit(strBomb[0])
             self.digit3.changeDigit(strBomb[1])
-            
+
         else:
-            self.digit3.changeDigit(strBomb[0]) 
-        
+            self.digit3.changeDigit(strBomb[0])
+
 class Timer(pygame.sprite.Sprite):
     """
     Keeps track of time with 3 digit sprites
     """
-    
+
     def __init__(self, w: int, h: int, right: int, top: int, digit1: Digit, digit2: Digit, digit3: Digit) -> None:
-        
+
         pygame.sprite.Sprite.__init__(self)
-        
+
         self.image = pygame.Surface((w, h))
         self.image.fill((150,150,150))
         self.rect = self.image.get_rect()
-        
+
         self.initialized = False
-        
+
         self.rect.topright = (right, top)
-        
+
         self.startTime = 0
-        
+
         self.digit1 = digit1
         self.digit2 = digit2
         self.digit3 = digit3
-        
+
     def init(self):
         """
         Start timer when the user clicks on a bomb
         """
-        
+
         self.initialized = True
         print("Starting timer")
         self.startTime = time.time()
-        
+
         self.digit1.changeDigit(0)
         self.digit2.changeDigit(0)
         self.digit3.changeDigit(0)
-        
+
     def update(self):
-    
+
         if self.initialized:
             elapsedTime = round(time.time() - self.startTime)
-            
+
             stringTime = str(elapsedTime)
-            
+
             if elapsedTime >= 100:
                 self.digit1.changeDigit(stringTime[0])
                 self.digit2.changeDigit(stringTime[1])
                 self.digit3.changeDigit(stringTime[2])
-            
+
             elif elapsedTime >= 10:
                 self.digit2.changeDigit(stringTime[0])
                 self.digit3.changeDigit(stringTime[1])
-                
+
             else:
-                self.digit3.changeDigit(stringTime[0])        
+                self.digit3.changeDigit(stringTime[0])
 
 class PlayButton(pygame.sprite.Sprite):
-    
+
     def __init__(self, w, h) -> None:
-        
+
         pygame.sprite.Sprite.__init__(self)
-        
+
         self.image = pygame.transform.scale(pygame.image.load("images/smiley.png"), (w, h)).convert_alpha()
         self.rect = self.image.get_rect()
 
@@ -223,12 +224,13 @@ def get_open_cells(field: MineField, cell: 'Cell') -> list:
     Returns:
         (list): a list of all open and connected cells.
     """
+
+    if cell.is_flag() or cell.is_mine() or not field.cell_is_safe(cell):
+        return [cell]
+
     open_cells: list = list()
     cell.set_visited(True)
     open_cells.append(cell)
-
-    if cell.is_flag() or not field.cell_is_safe(cell):
-        return [cell]
 
     for c in field.surrounding_cells(cell):
         open_cells.append(c)
@@ -258,14 +260,14 @@ def cell_to_box(boxes: list, field: MineField, cell: 'Cell') -> Box:
 def setupGame(numCol: int = 10, numRow: int = 10):
     # display
     pygame.display.set_caption("Minesweeper")
-    
+
     gameBarHeight = 50
     boxSize = 30
-    
+
     # for generating a grid of boxes
     x = 0
     y = gameBarHeight
-    
+
     screenWidth = numCol * boxSize
     screenHeight = (numRow * boxSize) + gameBarHeight
 
@@ -274,7 +276,7 @@ def setupGame(numCol: int = 10, numRow: int = 10):
     # -----entities------
         # minefield
     field = MineField.MineField(numRow, numCol)
-    
+
     # background
     background = pygame.Surface(screen.get_size())
     background.fill((0, 255, 0))
@@ -286,27 +288,27 @@ def setupGame(numCol: int = 10, numRow: int = 10):
     # game bar and widgets (bomb counter, timer, and new game button )
     gameBar = GameBar(screen, gameBarHeight)
     gameBar.rect.topleft = (0,0)
-    
+
     bombDigit1 = Digit(30, 30, 10, 10, 9)
     bombDigit2 = Digit(30, 30, 40, 10, 9)
     bombDigit3 = Digit(30, 30, 70, 10, 9)
-    
+
     bombCounter = BombCounter(40, 30, bombDigit1, bombDigit2, bombDigit3, field.get_mine_count())
-    
+
     timerDigit1 = Digit(30, 30, screen.get_width() - 90, 10, 9)
     timerDigit2 = Digit(30, 30, screen.get_width() - 60, 10, 9)
     timerDigit3 = Digit(30, 30, screen.get_width() - 30, 10, 9)
-    
+
     digitGroup = pygame.sprite.Group(bombDigit1, bombDigit2, bombDigit3, timerDigit1, timerDigit2, timerDigit3)
-    
+
     timer = Timer(40, 30, screen.get_width() - 10, 10, timerDigit1, timerDigit2, timerDigit3)
     playButton = PlayButton(30, 30)
-    
+
     bombCounter.rect.topleft = (10, 10)
     #timer.rect.topright = ()
     playButton.rect.centerx = screen.get_width() / 2
     playButton.rect.top = 10
-    
+
     boxes = []
     for r in range(numRow):
         x = 0
@@ -318,7 +320,7 @@ def setupGame(numCol: int = 10, numRow: int = 10):
             x += boxSize
 
         y += boxSize
-    
+
     return screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup
 
 
@@ -328,18 +330,21 @@ def main():
     firstClick = True # used for starting the timer when the user first clicks
 
     screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup = setupGame(numCol, numRow)
-    
+    print(field)
+
     mouseGroup = pygame.sprite.Group(mouse)
     gameBarGroup = pygame.sprite.Group(gameBar)
     widgetGroup = pygame.sprite.Group([bombCounter, timer, playButton])
     boxGroup = pygame.sprite.Group(boxes)
-    
-    
+
+
     sprites = [mouseGroup, gameBarGroup, widgetGroup, boxGroup, digitGroup]
-    
+
     # assign
     clock = pygame.time.Clock()
-    keepGoing = True
+    keepGoing: bool = True
+    first_click: bool = True
+    quick_flag: bool = False
 
     while keepGoing:
         clock.tick(fps)
@@ -348,35 +353,50 @@ def main():
             if event.type == pygame.QUIT:
                 keepGoing = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
+                replayClick = mouse.rect.colliderect(playButton.rect)
                 boxClicked: Box = pygame.sprite.spritecollide(mouse, boxGroup,
                                                               False)
-                replayClick = mouse.rect.colliderect(playButton.rect)
-                # Something nt a box is clicked
+                # Handle extraneous clicks
                 if not boxClicked and not replayClick:
                     continue
-                
+
                 if replayClick:
-                    
+
                     screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup = setupGame(numCol, numRow)
                     firstClick = True
-                    
+
                     mouseGroup = pygame.sprite.Group(mouse)
                     gameBarGroup = pygame.sprite.Group(gameBar)
                     widgetGroup = pygame.sprite.Group([bombCounter, timer, playButton])
                     boxGroup = pygame.sprite.Group(boxes)
-    
+
                     sprites = [mouseGroup, gameBarGroup, widgetGroup, boxGroup, digitGroup]
 
+                    first_click = True
+
+                leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
+
+                if middleClick:
+                    quick_flag = not quick_flag
+
+                if quick_flag:
+                    leftClick, rightClick = rightClick, leftClick
+
+                firt_click = False
+
                 if leftClick and not replayClick:
-                    
+
                     if firstClick:
-                        
+
                         firstClick = False
                         timer.init()
                         bombCounter.init()
-                        
+
                     cell: 'Cell' = field.get_cell_at(*boxClicked[0].coords)
+
+                    if first_click and cell.is_mine():
+                        field.move_mine(cell)
+
                     open_cells: list = get_open_cells(field, cell)
                     boxes_affected: list = [
                         cell_to_box(boxes, field, cell)for cell in open_cells
@@ -410,26 +430,6 @@ def main():
                             field.subtract_flagged()
                             bombCounter.inc()
 
-                    # if leftClick and not cell.is_clicked():
-                    #     cell.set_clicked(True)
-                    #     if cell.is_mine():
-                    #         box.image = pygame.image.load(
-                    #             "images/bomb.png").convert_alpha()
-                    #     else:
-                    #         box.image = pygame.image.load(
-                    #             f"images/{repr(cell)}.png").convert_alpha()
-                    #
-                    # if rightClick:
-                    #     cell.set_flag(not cell.is_flag())
-                    #     cell.set_clicked(not cell.is_clicked())
-                    #
-                    #     if cell.is_flag():
-                    #         box.image = pygame.image.load(
-                    #             "images/flagged.png").convert_alpha()
-                    #     else:
-                    #         box.image = pygame.image.load(
-                    #             "images/defaultBox.png").convert_alpha()
-                    
         # update groups
 
         for spriteGroup in sprites:
