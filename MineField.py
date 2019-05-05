@@ -15,6 +15,7 @@ class MineField:
         self._max_col = col
         # TODO research more effective bomb distribution ratios
         self._mine_count = row * col // 4
+        self._flagged_count = 0
         self._mine_field = [
             [Cell(r, c) for c in range(self._max_col)]
             for r in range(self._max_row)
@@ -127,6 +128,18 @@ class MineField:
 
     def get_col(self) -> int:
         return self._max_col
+    
+    def add_flagged(self):
+        self._flagged_count += 1
+        
+    def subtract_flagged(self):
+        self._flagged_count -= 1
+    
+    def get_flagged_count(self) -> int:
+        return self._flagged_count
+    
+    def get_mine_count(self) -> int:
+        return self._mine_count
 
     def get_cell_at(self, row: int, col: int) -> 'Cell':
         return self._mine_field[row][col]
