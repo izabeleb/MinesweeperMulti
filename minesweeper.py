@@ -133,7 +133,6 @@ class BombCounter(pygame.sprite.Sprite):
     def changeDigits(self):
 
         strBomb = str(self.bombNum)
-        print(strBomb)
 
         if self.bombNum >= 100:
             self.digit1.changeDigit(strBomb[0])
@@ -176,7 +175,6 @@ class Timer(pygame.sprite.Sprite):
         """
 
         self.initialized = True
-        print("Starting timer")
         self.startTime = time.time()
 
         self.digit1.changeDigit(0)
@@ -201,16 +199,49 @@ class Timer(pygame.sprite.Sprite):
 
             else:
                 self.digit3.changeDigit(stringTime[0])
+                
+    def stop(self):
+        
+        self.initialized = False
 
 class PlayButton(pygame.sprite.Sprite):
 
     def __init__(self, w, h) -> None:
 
         pygame.sprite.Sprite.__init__(self)
-
-        self.image = pygame.transform.scale(pygame.image.load("images/smiley.png"), (w, h)).convert_alpha()
+        
+        self.width = w
+        self.height = h
+        
+        self.happyImg = widgetImageDir + "/smiley.png"
+        self.sadImg = widgetImageDir + "/frowny.png"
+        self.surprisedImg = widgetImageDir + "/surprised.png"
+        
+        self.image = pygame.transform.scale(pygame.image.load(self.happyImg), (self.width, self.height)).convert_alpha()
         self.rect = self.image.get_rect()
-
+        
+    def happy(self):
+        
+        self.image = pygame.transform.scale(pygame.image.load(self.happyImg), (self.width, self.height)).convert_alpha()
+        print("Happy")
+        
+    def sad(self):
+        
+        self.image = pygame.transform.scale(pygame.image.load(self.sadImg), (self.width, self.height)).convert_alpha()
+        
+    def surprised(self):
+        
+        self.image = pygame.transform.scale(pygame.image.load(self.surprisedImg), (self.width, self.height)).convert_alpha()
+        print("Surpirsed")
+        
+def showMines(boxGroup, field):
+    
+    for box in boxGroup:
+        
+        cell = field.get_cell_at(*box.coords)
+        if (cell.is_mine() and not cell.is_flag()):
+            
+            box.setBomb()
 
 def get_open_cells(field: MineField, cell: 'Cell') -> list:
     """Get a list of open connected field cell coordinates.
@@ -327,10 +358,10 @@ def setupGame(numCol: int = 10, numRow: int = 10):
 def main():
     numCol = numRow = 10
     fps = 30
-    firstClick = True # used for starting the timer when the user first clicks
 
     screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup = setupGame(numCol, numRow)
     print(field)
+    print()
 
     mouseGroup = pygame.sprite.Group(mouse)
     gameBarGroup = pygame.sprite.Group(gameBar)
@@ -345,6 +376,7 @@ def main():
     keepGoing: bool = True
     first_click: bool = True
     quick_flag: bool = False
+    mineHit: bool = False
 
     while keepGoing:
         clock.tick(fps)
@@ -363,7 +395,6 @@ def main():
                 if replayClick:
 
                     screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup = setupGame(numCol, numRow)
-                    firstClick = True
 
                     mouseGroup = pygame.sprite.Group(mouse)
                     gameBarGroup = pygame.sprite.Group(gameBar)
@@ -373,62 +404,72 @@ def main():
                     sprites = [mouseGroup, gameBarGroup, widgetGroup, boxGroup, digitGroup]
 
                     first_click = True
+                    mineHit = False
 
-                leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
-
-                if middleClick:
-                    quick_flag = not quick_flag
-
-                if quick_flag:
-                    leftClick, rightClick = rightClick, leftClick
-
-                firt_click = False
-
-                if leftClick and not replayClick:
-
-                    if firstClick:
-
-                        firstClick = False
-                        timer.init()
-                        bombCounter.init()
-
-                    cell: 'Cell' = field.get_cell_at(*boxClicked[0].coords)
-
-                    if first_click and cell.is_mine():
-                        field.move_mine(cell)
-
-                    open_cells: list = get_open_cells(field, cell)
-                    boxes_affected: list = [
-                        cell_to_box(boxes, field, cell)for cell in open_cells
-                    ]
-                else:
-                    boxes_affected: list = boxClicked
-
-                for box in boxes_affected:
-                    cell: 'Cell' = field.get_cell_at(*box.coords)
-
-                    if leftClick and not cell.is_flag() and not \
-                            cell.is_clicked():
-                        cell.set_clicked(True)
-                        if cell.is_mine():
-                            box.setBomb()
-                        else:
-                            box.setNum(repr(cell))
-
-                    if rightClick:
-                        if cell.is_clicked() and not cell.is_flag():
-                            continue
-                        cell.set_flag(not cell.is_flag())
-                        field.add_flagged()
-                        cell.set_clicked(not cell.is_clicked())
-
-                        if cell.is_flag():
-                            box.setFlagged()
-                            bombCounter.dec()
-                        else:
-                            box.setDefault()
-                            field.subtract_flagged()
-                            bombCounter.inc()
+                if not mineHit: 
+                    
+                    leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
+    
+                    if middleClick:
+                        quick_flag = not quick_flag
+    
+                    if quick_flag:
+                        leftClick, rightClick = rightClick, leftClick
+    
+                    if leftClick and not replayClick:
+    
+                        if first_click:
+    
+                            first_click = False
+                            timer.init()
+                            bombCounter.init()
+    
+                        cell: 'Cell' = field.get_cell_at(*boxClicked[0].coords)
+    
+                        if first_click and cell.is_mine():
+                            field.move_mine(cell)
+    
+                        open_cells: list = get_open_cells(field, cell)
+                        boxes_affected: list = [
+                            cell_to_box(boxes, field, cell)for cell in open_cells
+                        ]
+                    else:
+                        boxes_affected: list = boxClicked
+    
+                    for box in boxes_affected:
+                        cell: 'Cell' = field.get_cell_at(*box.coords)
+    
+                        if leftClick and not cell.is_flag() and not \
+                                cell.is_clicked():
+                            cell.set_clicked(True)
+                            if cell.is_mine():
+                                box.setBomb()
+                                mineHit = True
+                                playButton.sad()
+                                timer.stop()
+                                showMines(boxGroup, field)
+                            else:
+                                box.setNum(repr(cell))
+                                playButton.surprised()
+    
+                        if rightClick:
+                            if cell.is_clicked() and not cell.is_flag():
+                                continue
+                            cell.set_flag(not cell.is_flag())
+                            field.add_flagged()
+                            cell.set_clicked(not cell.is_clicked())
+    
+                            if cell.is_flag():
+                                box.setFlagged()
+                                bombCounter.dec()
+                            else:
+                                box.setDefault()
+                                field.subtract_flagged()
+                                bombCounter.inc()
+            elif event.type == pygame.MOUSEBUTTONUP:
+                 
+                if not mineHit:
+                    playButton.happy()
 
         # update groups
 
