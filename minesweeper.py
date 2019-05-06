@@ -33,6 +33,7 @@ class Box(pygame.sprite.Sprite):
         self.defaultImg = f"{cellImageDir}/defaultBox.png"
         self.bombImg = f"{cellImageDir}/bomb.png"
         self.flagImg = f"{cellImageDir}/flagged.png"
+        self.incorrectlyFlaggedImg = f"{cellImageDir}/incorrectlyFlagged.png"
 
         self.image = pygame.transform.scale(pygame.image.load(self.defaultImg), (self.size, self.size)).convert_alpha()
         self.rect = self.image.get_rect()
@@ -54,6 +55,10 @@ class Box(pygame.sprite.Sprite):
     def setNum(self, num: int):
 
         self.image = pygame.transform.scale(pygame.image.load(f"{cellImageDir}/{num}.png"), (self.size, self.size)).convert_alpha()
+        
+    def setIncorrectlyFlagged(self):
+        
+        self.image = pygame.transform.scale(pygame.image.load(self.incorrectlyFlaggedImg), (self.size, self.size)).convert_alpha()
 
 class GameBar(pygame.sprite.Sprite):
 
@@ -223,7 +228,6 @@ class PlayButton(pygame.sprite.Sprite):
     def happy(self):
         
         self.image = pygame.transform.scale(pygame.image.load(self.happyImg), (self.width, self.height)).convert_alpha()
-        print("Happy")
         
     def sad(self):
         
@@ -232,7 +236,6 @@ class PlayButton(pygame.sprite.Sprite):
     def surprised(self):
         
         self.image = pygame.transform.scale(pygame.image.load(self.surprisedImg), (self.width, self.height)).convert_alpha()
-        print("Surpirsed")
         
 def showMines(boxGroup, field):
     
@@ -242,6 +245,10 @@ def showMines(boxGroup, field):
         if (cell.is_mine() and not cell.is_flag()):
             
             box.setBomb()
+            
+        elif (not cell.is_mine() and cell.is_flag()):
+            
+            box.setIncorrectlyFlagged()
 
 def get_open_cells(field: MineField, cell: 'Cell') -> list:
     """Get a list of open connected field cell coordinates.
@@ -356,7 +363,7 @@ def setupGame(numCol: int = 10, numRow: int = 10):
 
 
 def main():
-    numCol = numRow = 10
+    numCol = numRow = 20
     fps = 30
 
     screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup = setupGame(numCol, numRow)
@@ -418,16 +425,16 @@ def main():
     
                     if leftClick and not replayClick:
     
+                        cell: 'Cell' = field.get_cell_at(*boxClicked[0].coords)
+    
+                        if first_click and cell.is_mine():
+                            field.move_mine(cell)
+                            
                         if first_click:
     
                             first_click = False
                             timer.init()
                             bombCounter.init()
-    
-                        cell: 'Cell' = field.get_cell_at(*boxClicked[0].coords)
-    
-                        if first_click and cell.is_mine():
-                            field.move_mine(cell)
     
                         open_cells: list = get_open_cells(field, cell)
                         boxes_affected: list = [
