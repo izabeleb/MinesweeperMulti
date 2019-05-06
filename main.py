@@ -4,7 +4,7 @@ Created on Sun May  5 21:05:27 2019
 
 @author: bauzy
 """
-from settings import Mode
+from mode import Mode
 import pygame
 import minesweeper
 import menu
@@ -31,7 +31,7 @@ def program():
             print(command)
             
             if command == "singlePlayer":
-                minesweeper.main()
+                minesweeper.main(game_mode)
                 
             elif command == "multiPlayer":
                 
@@ -39,7 +39,6 @@ def program():
             
             elif command == "settings":
                 donePlaying, game_mode = settings.main()
-                print(game_mode.mode_to_dict())
 
     pygame.quit()
     game_mode.store_mode()

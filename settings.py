@@ -1,4 +1,5 @@
 import pygame
+from mode import Mode
 
 pygame.init()
 
@@ -69,42 +70,6 @@ class Label(pygame.sprite.Sprite):
 
             self.rect.right = self.loc[0]
             self.rect.centery = self.loc[1]
-
-
-class Mode:
-    MODE_EASY: tuple = (10, 10)
-    MODE_NORMAL: tuple = (20, 20)
-    MODE_HARD: tuple = (30, 30)
-
-    def __init__(self, mode: tuple = None) -> None:
-        if mode is None:
-            mode = Mode.MODE_NORMAL
-
-        self.mode = mode
-
-    def mode_to_dict(self):
-        return {'HEIGHT': self.mode[0], 'WIDTH': self.mode[1]}
-
-    @staticmethod
-    def restore_mode(path='setings.json') -> 'Mode':
-        import os
-
-        if not os.path.isfile(path):
-            return Mode()
-
-        mode_json: str = ''
-        with open(path, 'w') as file_mode:
-            mode_json += file_mode.read()
-
-        mode_json: dict = mode_json.loads()
-
-        return Mode((mode_json['HEIGHT'], mode_json['WIDTH']))
-
-    def store_mode(self) -> None:
-        import json
-
-        with open('settings.json', 'w') as store:
-            store.write(json.dumps(self.mode_to_dict()))
 
 
 def main() -> tuple:

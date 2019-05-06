@@ -3,6 +3,7 @@ import pygame
 import MineField
 from random import randint
 import time
+from mode import Mode
 
 pygame.init()
 screen = pygame.display.set_mode((640, 480))
@@ -362,8 +363,9 @@ def setupGame(numCol: int = 10, numRow: int = 10):
     return screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup
 
 
-def main():
-    numCol = numRow = 20
+def main(game_mode: Mode = Mode()):
+    numCol = game_mode.get_width()
+    numRow = game_mode.get_height()
     fps = 30
 
     screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup = setupGame(numCol, numRow)
