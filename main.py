@@ -4,10 +4,13 @@ Created on Sun May  5 21:05:27 2019
 
 @author: bauzy
 """
-
+from settings import Mode
 import pygame
+import minesweeper
+import menu
+import settings
 pygame.init()
-import minesweeper, menu
+
 
 def program():
     """
@@ -17,6 +20,7 @@ def program():
     """
 
     donePlaying = False
+    game_mode: Mode = Mode.restore_mode()
     
     while not donePlaying:
         
@@ -34,9 +38,10 @@ def program():
                 pass
             
             elif command == "settings":
-                
-                pass
+                donePlaying, game_mode = settings.main()
+                print(game_mode.mode_to_dict())
 
     pygame.quit()
+    game_mode.store_mode()
     
 program()

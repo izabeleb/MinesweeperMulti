@@ -367,8 +367,6 @@ def main():
     fps = 30
 
     screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup = setupGame(numCol, numRow)
-    print(field)
-    print()
 
     mouseGroup = pygame.sprite.Group(mouse)
     gameBarGroup = pygame.sprite.Group(gameBar)

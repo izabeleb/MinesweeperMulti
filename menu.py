@@ -12,7 +12,8 @@ Created on Sun May  5 20:42:43 2019
 """
 
 #import and initialize
-import pygame, random
+import pygame
+import random
 pygame.init()
 
 class Mouse(pygame.sprite.Sprite):
@@ -209,6 +210,7 @@ def main():
         pygame.display.flip()
 
     return donePlaying, buttonName
-    
+
+
 if __name__ == "__main__":
     main()
