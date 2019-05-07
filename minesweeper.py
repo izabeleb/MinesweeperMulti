@@ -1,4 +1,4 @@
-# import and initialize
+"""Creates the main entry point and center for all game functionality."""
 import pygame
 import MineField
 from random import randint
@@ -327,7 +327,6 @@ def setupGame(numCol: int = 10, numRow: int = 10):
     # game bar and widgets (bomb counter, timer, and new game button )
     gameBar = GameBar(screen, gameBarHeight)
     gameBar.rect.topleft = (0,0)
-
     bombDigit1 = Digit(30, 30, 10, 10, 9)
     bombDigit2 = Digit(30, 30, 40, 10, 9)
     bombDigit3 = Digit(30, 30, 70, 10, 9)
@@ -339,6 +338,7 @@ def setupGame(numCol: int = 10, numRow: int = 10):
     timerDigit3 = Digit(30, 30, screen.get_width() - 30, 10, 9)
 
     digitGroup = pygame.sprite.Group(bombDigit1, bombDigit2, bombDigit3, timerDigit1, timerDigit2, timerDigit3)
+    field = MineField.MineField(numRow, numCol)
 
     timer = Timer(40, 30, screen.get_width() - 10, 10, timerDigit1, timerDigit2, timerDigit3)
     playButton = PlayButton(30, 30)
