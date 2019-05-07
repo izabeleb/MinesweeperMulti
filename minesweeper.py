@@ -146,10 +146,13 @@ class BombCounter(pygame.sprite.Sprite):
             self.digit3.changeDigit(strBomb[2])
 
         elif self.bombNum >= 10:
+            self.digit1.changeDigit(0)
             self.digit2.changeDigit(strBomb[0])
             self.digit3.changeDigit(strBomb[1])
 
         else:
+            self.digit1.changeDigit(0)
+            self.digit2.changeDigit(0)
             self.digit3.changeDigit(strBomb[0])
 
 class Timer(pygame.sprite.Sprite):
@@ -237,6 +240,31 @@ class PlayButton(pygame.sprite.Sprite):
     def surprised(self):
         
         self.image = pygame.transform.scale(pygame.image.load(self.surprisedImg), (self.width, self.height)).convert_alpha()
+        
+class ModeIndicator(pygame.sprite.Sprite):
+    
+    def __init__(self, w, h) -> None:
+
+        pygame.sprite.Sprite.__init__(self)
+        
+        self.width = w
+        self.height = h
+        
+        self.imgDir = f"{widgetImageDir}/FlaggingModeWidget/"
+        
+        self.normalModeImg = f"{self.imgDir}NormalMode.png"
+        self.quickFlaggingModeImg = f"{self.imgDir}FlaggingMode.png"
+        
+        self.image = pygame.transform.scale(pygame.image.load(self.normalModeImg), (self.width, self.height)).convert_alpha()
+        self.rect = self.image.get_rect()
+        
+    def setQuickFlagMode(self):
+        
+        self.image = pygame.transform.scale(pygame.image.load(self.quickFlaggingModeImg), (self.width, self.height)).convert_alpha()
+    
+    def setNormalMode(self):
+        
+        self.image = pygame.transform.scale(pygame.image.load(self.normalModeImg), (self.width, self.height)).convert_alpha()
         
 def showMines(boxGroup, field):
     
@@ -342,11 +370,14 @@ def setupGame(numCol: int = 10, numRow: int = 10):
 
     timer = Timer(40, 30, screen.get_width() - 10, 10, timerDigit1, timerDigit2, timerDigit3)
     playButton = PlayButton(30, 30)
+    modeIndicator = ModeIndicator(30, 30)
 
     bombCounter.rect.topleft = (10, 10)
     #timer.rect.topright = ()
-    playButton.rect.centerx = screen.get_width() / 2
+    playButton.rect.centerx = (screen.get_width() / 2) - 20
     playButton.rect.top = 10
+    modeIndicator.rect.centerx = (screen.get_width() / 2) + 20
+    modeIndicator.rect.top = 10
 
     boxes = []
     for r in range(numRow):
@@ -360,7 +391,7 @@ def setupGame(numCol: int = 10, numRow: int = 10):
 
         y += boxSize
 
-    return screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup
+    return screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, field, boxes, digitGroup
 
 
 def main(game_mode: Mode = Mode()):
@@ -368,11 +399,11 @@ def main(game_mode: Mode = Mode()):
     numRow = game_mode.get_height()
     fps = 30
 
-    screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup = setupGame(numCol, numRow)
+    screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, field, boxes, digitGroup = setupGame(numCol, numRow)
 
     mouseGroup = pygame.sprite.Group(mouse)
     gameBarGroup = pygame.sprite.Group(gameBar)
-    widgetGroup = pygame.sprite.Group([bombCounter, timer, playButton])
+    widgetGroup = pygame.sprite.Group([bombCounter, timer, playButton, modeIndicator])
     boxGroup = pygame.sprite.Group(boxes)
 
 
@@ -395,17 +426,31 @@ def main(game_mode: Mode = Mode()):
                 replayClick = mouse.rect.colliderect(playButton.rect)
                 boxClicked: Box = pygame.sprite.spritecollide(mouse, boxGroup,
                                                               False)
+                modeClick = mouse.rect.colliderect(modeIndicator.rect)
+                 
                 # Handle extraneous clicks
-                if not boxClicked and not replayClick:
+                if not boxClicked and not replayClick and not modeClick:
+                    continue
+                
+                if modeClick:
+                    
+                    quick_flag = not quick_flag
+                    
+                    if quick_flag:
+                        modeIndicator.setQuickFlagMode()
+                        
+                    else:
+                        modeIndicator.setNormalMode()   
+                        
                     continue
 
                 if replayClick:
 
-                    screen, background, mouse, gameBar, bombCounter, timer, playButton, field, boxes, digitGroup = setupGame(numCol, numRow)
+                    screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, field, boxes, digitGroup = setupGame(numCol, numRow)
 
                     mouseGroup = pygame.sprite.Group(mouse)
                     gameBarGroup = pygame.sprite.Group(gameBar)
-                    widgetGroup = pygame.sprite.Group([bombCounter, timer, playButton])
+                    widgetGroup = pygame.sprite.Group([bombCounter, timer, playButton, modeIndicator])
                     boxGroup = pygame.sprite.Group(boxes)
 
                     sprites = [mouseGroup, gameBarGroup, widgetGroup, boxGroup, digitGroup]
@@ -422,6 +467,10 @@ def main(game_mode: Mode = Mode()):
     
                     if quick_flag:
                         leftClick, rightClick = rightClick, leftClick
+                        modeIndicator.setQuickFlagMode()
+                        
+                    else:
+                        modeIndicator.setNormalMode()
     
                     if leftClick and not replayClick:
     
