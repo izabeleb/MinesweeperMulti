@@ -1,14 +1,28 @@
 class Cell:
-    """Wrapper class for each cell in a MineField field."""
+    """Wrapper class for each cell in a MineField field.
 
-    def __init__(self, row: int, col: int):
+    Args:
+        row (int): the row the cell is located int.
+        col (in): tehe column the cell is located in
+        mine (bool): whether the cell is a mine or not.
+        flag (bool): whether teh user has marked the cell with a flag or not.
+        mine_count (int): the amount of mines surrounding the cell.
+        visited (bool): whether the cell has been visited when opening cells or
+            not.
+        clicked (bool): whether the the cell has been clicked by the user or
+            not.
+    """
+
+    def __init__(self, row: int, col: int, mine: bool = False,
+                 flag: bool = False, mine_count: int = 0,
+                 visited: bool = False, clicked: bool = False):
         self._row: int = row
         self._col: int = col
-        self._mine: bool = False
-        self._flag: bool = False
-        self._mine_count: int = 0
-        self._visited: bool = False
-        self._clicked: bool = False
+        self._mine: bool = mine
+        self._flag: bool = flag
+        self._mine_count: int = mine_count
+        self._visited: bool = visited
+        self._clicked: bool = clicked
 
     def __repr__(self):
         if self._mine:

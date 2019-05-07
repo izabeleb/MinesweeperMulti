@@ -1,5 +1,6 @@
 from random import randint
 from Cell import Cell
+import json
 
 
 class MineField:
@@ -8,20 +9,47 @@ class MineField:
     Args:
         row (int): the width of the board.
         col (int): the height of the board.
+        mine_field (list): a predefined mine_field 2-D array for
 
     """
-    def __init__(self, row: int = 10, col: int = 10) -> None:
-        self._max_row = row
-        self._max_col = col
-        # TODO research more effective bomb distribution ratios
-        self._mine_count = row * col // 4
-        self._flagged_count = 0
-        self._mine_field = [
-            [Cell(r, c) for c in range(self._max_col)]
-            for r in range(self._max_row)
+    @staticmethod
+    def decode(field: bytes, encoding: str = 'ascii') -> 'MineField':
+        field: str = field.decode(encoding)
+        field_json: dict = json.loads(field)
+
+        max_cols: int = field_json['COLS']
+        max_rows: int = field_json['ROWS']
+        cell_list: list = field_json['CELLS']
+        mine_field: list = [
+            [None for j in range(max_cols)] for i in range(max_rows)
         ]
 
-        self._generate_mines()
+        for cell in cell_list:
+            col = cell['COL']
+            row = cell['ROW']
+            mine_field[row][col] = Cell(row, col, cell['IS_MINE'],
+                                        cell['IS_FLAG'], cell['MINE_COUNT'],
+                                        cell['IS_VISITED'], cell['IS_CLICKED'])
+        return MineField(mine_field=mine_field)
+
+    def __init__(self, row: int = 10, col: int = 10,
+                 mine_field: list = None) -> None:
+        if mine_field is not None:
+            self._mine_field = mine_field
+            self._max_row = len(self._mine_field)
+            self._max_col = len(self._mine_field[0])
+        else:
+            self._max_row = row
+            self._max_col = col
+
+            # TODO research more effective bomb distribution ratios
+            self._mine_count = row * col // 4
+            self._flagged_count = 0
+            self._mine_field = [
+                [Cell(r, c) for c in range(self._max_col)]
+                for r in range(self._max_row)
+            ]
+            self._generate_mines()
 
     def __repr__(self) -> str:
         repr_list: list = list()
@@ -66,6 +94,32 @@ class MineField:
         """
         for c in self.surrounding_cells(cell):
             c.set_mine_count(c.get_mine_count() - 1)
+
+    def encode(self, encoding: str = 'ascii') -> bytes:
+        """Encode a minefield object.
+
+        Args:
+            encoding (str)): the format to use when encoding.
+
+        Returns:
+            (bytes): the encoded JSON representation of the MineField instance.
+        """
+
+        json_dict: dict = {'COLS': self._max_col,
+                           'ROWS': self._max_row,
+                           'CELLS': []}
+        for cell in self:
+            cell_dict = {'COL': cell.get_col(),
+                         'ROW': cell.get_row(),
+                         'MINE_COUNT': cell.get_mine_count(),
+                         'IS_MINE': cell.is_mine(),
+                         'IS_FLAG': cell.is_flag(),
+                         'IS_VISITED': cell.is_visited(),
+                         'IS_CLICKED': cell.is_clicked()}
+            json_dict['CELLS'].append(cell_dict)
+        json_str: str = json.dumps(json_dict)
+
+        return json_str.encode(encoding)
 
     def surrounding_cells(self, cell: Cell) -> Cell:
         """Generator for cells surrounding the target cell.
