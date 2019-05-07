@@ -3,8 +3,16 @@ from Cell import Cell
 import json
 
 
+class BadField(Exception):
+    """Raised when a field is corrupted or malformed."""
+    pass
+
+
 class MineField:
     """Wrapper class for the minesweeper board.
+
+    If mine field is specified the values of row and col are ignored,
+    and the size of the mine field is determined based off of the field.
 
     Args:
         row (int): the width of the board.
@@ -14,6 +22,15 @@ class MineField:
     """
     @staticmethod
     def decode(field: bytes, encoding: str = 'ascii') -> 'MineField':
+        """Decode the encoded JSON representation of a MineField instnace.
+
+        Args:
+            field (bytes): the encoded representation of a mIneField object.
+            encoding (str): the encoding format to decode by.
+
+        Returns:
+            (MineField): the decoded MIneField instance.
+        """
         field: str = field.decode(encoding)
         field_json: dict = json.loads(field)
 
@@ -30,6 +47,14 @@ class MineField:
             mine_field[row][col] = Cell(row, col, cell['IS_MINE'],
                                         cell['IS_FLAG'], cell['MINE_COUNT'],
                                         cell['IS_VISITED'], cell['IS_CLICKED'])
+
+        if len(mine_field) != max_rows:
+            raise BadField
+
+        for row in mine_field:
+            if len(row) != maxa_cols:
+                raise BadField
+
         return MineField(mine_field=mine_field)
 
     def __init__(self, row: int = 10, col: int = 10,

@@ -20,3 +20,6 @@
 
 # Virtual enviroment
 venv/*
+
+# Program Generated
+*.json

@@ -3,7 +3,7 @@ class Cell:
 
     Args:
         row (int): the row the cell is located int.
-        col (in): tehe column the cell is located in
+        col (in): the column the cell is located in
         mine (bool): whether the cell is a mine or not.
         flag (bool): whether teh user has marked the cell with a flag or not.
         mine_count (int): the amount of mines surrounding the cell.

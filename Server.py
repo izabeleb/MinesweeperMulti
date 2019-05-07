@@ -1,9 +1,8 @@
 """Defines the server used to connect multiple clients."""
+from MineField import MineField
 import asyncio
-import json
 import struct
 import argparse
-import MineField
 
 
 class Server(asyncio.Protocol):
@@ -12,8 +11,8 @@ class Server(asyncio.Protocol):
         Changes are sent in the following format:
             <packet_length><packet_json>
         The JSON has TWO fields ('HIT' and 'FLAG') with a list of tuples
-        specifying the field coordinates where the change occurred. Each packet
-        may contain one or both of these fields.
+        specifying the field coordinates where the change occurred.
+        Each packet may contain one or both of these fields.
 
         (eg)
         {
@@ -35,9 +34,12 @@ class Server(asyncio.Protocol):
         Returns:
             (bytes): the encode size of the packet
         """
-        return struct.pack('!H', len(packet))
+        return struct.pack('!I', len(packet))
 
-    def connection_mande(self, transport) -> None:
+    def __init__(self) -> None:
+        self._mine_field = MineField()
+
+    def connection_made(self, transport) -> None:
         """Define values pertinent to the connection ith the client.
 
         Args:
@@ -45,17 +47,27 @@ class Server(asyncio.Protocol):
                 data to and from the client.
         """
         self.transport = transport
-        self.address: tuple = self.transport.get_extra_info('peername')
-        self.buffer: bytes = b''
+        self._address: tuple = self.transport.get_extra_info('peername')
+        self._buffer: bytes = b''
         print(f'Accepted connection form {self.address}')
 
-    def data_received(self, data: bytes):
+    def data_received(self, data: bytes) -> None:
         """Handle data read from the client.
+
+        Data is in JSON format, with any of the following fields:
+            COL     Column number
+            ROW     Row number
+            ACTION  The action maade by the user (eg. HIT, FLAG, or
+                    FIELD)
+        If the ACTION is FIELD the servers encode field is returned.
 
         Args:
             data (bytes): the data read from the client socket.
         """
-        pass
+        self._buffer += data
+
+        while len(self._buffer) >= 4:
+            packet_len: int = struct.unpack('!I', self._buffer[:4:])[0]
 
     def reply_server_field(self) -> None:
         """Send the server mine_field to the client."""
