@@ -1,10 +1,15 @@
 from random import randint
-from minefield import Cell
+from minefield.Cell import Cell
 import json
 
 
 class BadField(Exception):
     """Raised when a field is corrupted or malformed."""
+    pass
+
+
+class OutOfFieldCell(Exception):
+    """Raised when a cell location is outside the range of the field."""
     pass
 
 
