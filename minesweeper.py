@@ -1,9 +1,9 @@
 """Creates the main entry point and center for all game functionality."""
-import pygame
-from minefield import MineField, Cell
-from random import randint
-import time
+from minefield.MineField import MineField
+from minefield.MineField import Cell
 from mode import Mode
+import pygame
+import time
 
 pygame.init()
 screen = pygame.display.set_mode((640, 480))

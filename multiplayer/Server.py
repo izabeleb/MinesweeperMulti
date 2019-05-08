@@ -1,8 +1,9 @@
 """Defines the server used to connect multiple clients."""
-from minefield import MineField
+from minefield.MineField import MineField
 import asyncio
 import struct
 import argparse
+import json
 
 
 class Server(asyncio.Protocol):
@@ -20,6 +21,8 @@ class Server(asyncio.Protocol):
             'FLAG': [(5, 8), (7, 3)]
         }
     """
+    transport_list: list = list()
+    mine_field: MineField = None
 
     @staticmethod
     def get_packet_size(packet: bytes) -> bytes:
@@ -36,8 +39,9 @@ class Server(asyncio.Protocol):
         """
         return struct.pack('!I', len(packet))
 
-    def __init__(self) -> None:
-        self._mine_field = MineField()
+    def __init__(self, row: int = 10, col: int = 10) -> None:
+        if Server.mine_field is None:
+            Server.mine_field = MineField(row, col)
 
     def connection_made(self, transport) -> None:
         """Define values pertinent to the connection ith the client.
@@ -49,6 +53,9 @@ class Server(asyncio.Protocol):
         self.transport = transport
         self._address: tuple = self.transport.get_extra_info('peername')
         self._buffer: bytes = b''
+
+        Server.transport_list.append(self.transport)
+
         print(f'Accepted connection form {self.address}')
 
     def data_received(self, data: bytes) -> None:
@@ -59,19 +66,60 @@ class Server(asyncio.Protocol):
             ROW     Row number
             ACTION  The action maade by the user (eg. HIT, FLAG, or
                     FIELD)
-        If the ACTION is FIELD the servers encode field is returned.
+        If the ACTION is FIELD the servers encoded field is returned.
 
         Args:
             data (bytes): the data read from the client socket.
         """
         self._buffer += data
 
-        while len(self._buffer) >= 4:
-            packet_len: int = struct.unpack('!I', self._buffer[:4:])[0]
+        while len(self._buffer) > 4:
+            packet_length: int = struct.unpack('!I', self._buffer[:4:])[0]
+
+            if len(self._buffer) < 4 + packet_length:
+                break
+            packet: dict = json.loads(self._buffer[4:packet_length:].decode())
+            self._buffer = self._buffer[4 + packet_length::]
+
+            affected_row: int = -1
+            affected_col: int = -1
+
+            if 'ROW' in packet:
+                affected_row = packet['ROW']
+            if 'COL' in packet:
+                affected_col = packet['COL']
+            if 'ACTION' in packet:
+                action: str = packet['ACTION']
+                affected_cell = Server.mine_field.get_cell_at(affected_row,
+                                                              affected_col)
+                if action == 'FLAG':
+                    affected_cell.set_flag(True)
+                    affected_cell.set_clicked(True)
+                elif action == 'HIT':
+                    affected_cell.set_clicked(True)
+                elif action == 'FIELD':
+                    self.reply_server_field()
+
+                if action != 'FIELD':
+                    self.broadcast_change(packet)
 
     def reply_server_field(self) -> None:
         """Send the server mine_field to the client."""
-        pass
+        self.transport.write(Server.mine_field.encode())
+
+    def broadcast_change(self, change_dict: dict) -> None:
+        """Broadcast the change made by the user.
+
+        Args:
+            change_dict (dict): The dictionary describing the change that was
+                made.
+        """
+        change_json: bytes = json.dumps(change_dict).encode()
+        change_length: bytes = Server.get_packet_size(change_json)
+
+        for transport in Server.transport_list:
+            if transport != self.transport:
+                self.transport.write(change_length + change_json)
 
 
 def run_server(host: str, port: int):
