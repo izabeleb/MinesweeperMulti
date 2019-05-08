@@ -1,5 +1,5 @@
 from random import randint
-from Cell import Cell
+from minefield import Cell
 import json
 
 
@@ -52,7 +52,7 @@ class MineField:
             raise BadField
 
         for row in mine_field:
-            if len(row) != maxa_cols:
+            if len(row) != max_cols:
                 raise BadField
 
         return MineField(mine_field=mine_field)

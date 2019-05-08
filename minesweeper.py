@@ -1,6 +1,6 @@
 """Creates the main entry point and center for all game functionality."""
 import pygame
-import MineField
+from minefield import MineField, Cell
 from random import randint
 import time
 from mode import Mode

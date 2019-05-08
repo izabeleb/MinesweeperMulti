@@ -1,5 +1,5 @@
 """Defines the server used to connect multiple clients."""
-from MineField import MineField
+from minefield import MineField
 import asyncio
 import struct
 import argparse

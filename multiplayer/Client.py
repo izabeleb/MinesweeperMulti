@@ -1,5 +1,5 @@
 """Defines the Client used to send adn receive data to the server."""
-from MineField import MineField
+from minefield import MineField
 import asyncio
 import struct
 import json
