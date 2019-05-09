@@ -2,6 +2,7 @@
 from minefield.MineField import MineField
 from minefield.MineField import Cell
 from mode import Mode
+from multiplayer import Client
 import pygame
 import time
 
@@ -61,6 +62,7 @@ class Box(pygame.sprite.Sprite):
         
         self.image = pygame.transform.scale(pygame.image.load(self.incorrectlyFlaggedImg), (self.size, self.size)).convert_alpha()
 
+
 class GameBar(pygame.sprite.Sprite):
 
     def __init__(self, screen, gameBarHeight: int) -> None:
@@ -70,6 +72,7 @@ class GameBar(pygame.sprite.Sprite):
         self.image = pygame.Surface((screen.get_width(), gameBarHeight))
         self.image.fill((90,90,90))
         self.rect = self.image.get_rect()
+
 
 class Digit(pygame.sprite.Sprite):
     """
@@ -94,6 +97,7 @@ class Digit(pygame.sprite.Sprite):
 
         self.value = value
         self.image = pygame.transform.scale(pygame.image.load(f"{widgetImageDir}/{self.value}.png"), (self.width, self.height)).convert_alpha()
+
 
 class BombCounter(pygame.sprite.Sprite):
     """
@@ -155,6 +159,7 @@ class BombCounter(pygame.sprite.Sprite):
             self.digit2.changeDigit(0)
             self.digit3.changeDigit(strBomb[0])
 
+
 class Timer(pygame.sprite.Sprite):
     """
     Keeps track of time with 3 digit sprites
@@ -213,6 +218,7 @@ class Timer(pygame.sprite.Sprite):
         
         self.initialized = False
 
+
 class PlayButton(pygame.sprite.Sprite):
 
     def __init__(self, w, h) -> None:
@@ -240,7 +246,8 @@ class PlayButton(pygame.sprite.Sprite):
     def surprised(self):
         
         self.image = pygame.transform.scale(pygame.image.load(self.surprisedImg), (self.width, self.height)).convert_alpha()
-        
+
+
 class ModeIndicator(pygame.sprite.Sprite):
     
     def __init__(self, w, h) -> None:
@@ -265,7 +272,8 @@ class ModeIndicator(pygame.sprite.Sprite):
     def setNormalMode(self):
         
         self.image = pygame.transform.scale(pygame.image.load(self.normalModeImg), (self.width, self.height)).convert_alpha()
-        
+
+
 def showMines(boxGroup, field):
     
     for box in boxGroup:
@@ -278,6 +286,7 @@ def showMines(boxGroup, field):
         elif (not cell.is_mine() and cell.is_flag()):
             
             box.setIncorrectlyFlagged()
+
 
 def get_open_cells(field: MineField, cell: 'Cell') -> list:
     """Get a list of open connected field cell coordinates.
@@ -324,7 +333,7 @@ def cell_to_box(boxes: list, field: MineField, cell: 'Cell') -> Box:
     return boxes[field.get_col() * cell.get_row() + cell.get_col()]
 
 
-def setupGame(numCol: int = 10, numRow: int = 10):
+def setupGame(field: MineField) -> tuple:
     # display
     pygame.display.set_caption("Minesweeper")
 
@@ -335,14 +344,10 @@ def setupGame(numCol: int = 10, numRow: int = 10):
     x = 0
     y = gameBarHeight
 
-    screenWidth = numCol * boxSize
-    screenHeight = (numRow * boxSize) + gameBarHeight
+    screenWidth = field.get_col() * boxSize
+    screenHeight = (field.get_row() * boxSize) + gameBarHeight
 
     screen = pygame.display.set_mode((screenWidth, screenHeight))
-
-    # -----entities------
-        # minefield
-    field = MineField.MineField(numRow, numCol)
 
     # background
     background = pygame.Surface(screen.get_size())
@@ -366,7 +371,6 @@ def setupGame(numCol: int = 10, numRow: int = 10):
     timerDigit3 = Digit(30, 30, screen.get_width() - 30, 10, 9)
 
     digitGroup = pygame.sprite.Group(bombDigit1, bombDigit2, bombDigit3, timerDigit1, timerDigit2, timerDigit3)
-    field = MineField.MineField(numRow, numCol)
 
     timer = Timer(40, 30, screen.get_width() - 10, 10, timerDigit1, timerDigit2, timerDigit3)
     playButton = PlayButton(30, 30)
@@ -380,9 +384,9 @@ def setupGame(numCol: int = 10, numRow: int = 10):
     modeIndicator.rect.top = 10
 
     boxes = []
-    for r in range(numRow):
+    for r in range(field.get_row()):
         x = 0
-        for c in range(numCol):
+        for c in range(field.get_col()):
             box = Box(boxSize, (r, c))
             box.rect.left = x
             box.rect.top = y
@@ -391,15 +395,20 @@ def setupGame(numCol: int = 10, numRow: int = 10):
 
         y += boxSize
 
-    return screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, field, boxes, digitGroup
+    return screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, boxes, digitGroup
 
 
-def main(game_mode: Mode = Mode()):
-    numCol = game_mode.get_width()
-    numRow = game_mode.get_height()
+def main(game_mode: Mode = Mode(), client: Client = None):
+    if client is None:
+        field = MineField(game_mode.get_height(), game_mode.get_width())
+    else:
+        client.request_server_field()
+        time.sleep(1)
+        field: MineField = client.get_mine_field()
+
     fps = 30
 
-    screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, field, boxes, digitGroup = setupGame(numCol, numRow)
+    screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, boxes, digitGroup = setupGame(field)
 
     mouseGroup = pygame.sprite.Group(mouse)
     gameBarGroup = pygame.sprite.Group(gameBar)
@@ -445,8 +454,8 @@ def main(game_mode: Mode = Mode()):
                     continue
 
                 if replayClick:
-
-                    screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, field, boxes, digitGroup = setupGame(numCol, numRow)
+                    field = MineField(game_mode.get_height(), game_mode.get_width())
+                    screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, boxes, digitGroup = setupGame(field)
 
                     mouseGroup = pygame.sprite.Group(mouse)
                     gameBarGroup = pygame.sprite.Group(gameBar)
