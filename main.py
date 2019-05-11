@@ -7,8 +7,7 @@ Created on Sun May  5 21:05:27 2019
 from mode import Mode
 import pygame
 import minesweeper
-import menu
-import settings
+import menus
 pygame.init()
 
 
@@ -24,7 +23,7 @@ def program():
     
     while not donePlaying:
         
-        donePlaying, command = menu.main()
+        donePlaying, command = menus.mainMenu()
 
         if not donePlaying:
             
@@ -38,7 +37,7 @@ def program():
                 pass
             
             elif command == "settings":
-                donePlaying, game_mode = settings.main()
+                donePlaying, game_mode = menus.settingsMenu()
 
     pygame.quit()
     game_mode.store_mode()
