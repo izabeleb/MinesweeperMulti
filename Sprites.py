@@ -9,6 +9,7 @@ import pygame
 pygame.init()
 import time
 import random
+from ColorTheme import ColorTheme
 
 # image directories
 cellImageDir = ""
@@ -81,7 +82,7 @@ class GameBar(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.Surface((screen.get_width(), gameBarHeight))
-        self.image.fill((90,90,90))
+        self.image.fill(ColorTheme.GAMEBAR)
         self.rect = self.image.get_rect()
 
 class Digit(pygame.sprite.Sprite):
@@ -118,7 +119,7 @@ class BombCounter(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.Surface((w, h))
-        self.image.fill((150,150,150))
+        self.image.fill(ColorTheme.BOMB_COUNTER)
         self.rect = self.image.get_rect()
 
         self.digit1 = digit1
@@ -178,7 +179,7 @@ class Timer(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.Surface((w, h))
-        self.image.fill((150,150,150))
+        self.image.fill(ColorTheme.TIMER)
         self.rect = self.image.get_rect()
 
         self.initialized = False
@@ -293,18 +294,18 @@ class Button(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.name = name
         self.image = pygame.Surface((300, 70))
-        self.image.fill((0, 255, 255))
+        self.image.fill(ColorTheme.BUTTON)
         self.rect = self.image.get_rect()
         self.rect.centerx = x
         self.rect.centery = y
         
     def hover(self):
         
-        self.image.fill((0, 0, 255))
+        self.image.fill(ColorTheme.BUTTON_HOVER)
         
     def unhover(self):
         
-        self.image.fill((0, 255, 255))
+        self.image.fill(ColorTheme.BUTTON)
 
 class Label(pygame.sprite.Sprite):
     """
@@ -312,7 +313,7 @@ class Label(pygame.sprite.Sprite):
     Does not update
     """
 
-    def __init__(self, name, text, loc, alignment, bgColor = None, size = 30, color=(255, 255, 255)):
+    def __init__(self, name, text, loc, alignment, bgColor = None, size = 30, color=ColorTheme.MENU_TEXT_ITEM):
         """
         name for matching with the button object name and keeping the same background color
         string text
@@ -366,12 +367,12 @@ class Label(pygame.sprite.Sprite):
         
     def hover(self):
         
-        self.bgColor = (0, 0, 255)
+        self.bgColor = ColorTheme.BUTTON_HOVER
         self.render()
         
     def unhover(self):
         
-        self.bgColor = (0, 255, 255)
+        self.bgColor = ColorTheme.BUTTON
         self.render()
         
 class Bomb(pygame.sprite.Sprite):

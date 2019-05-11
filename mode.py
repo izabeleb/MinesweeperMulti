@@ -1,6 +1,5 @@
-import json
 import os
-
+import json
 
 class Mode:
     MODE_EASY: dict = {'HEIGHT': 10, 'WIDTH': 10}

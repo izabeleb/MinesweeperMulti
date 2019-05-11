@@ -27,8 +27,6 @@ def program():
 
         if not donePlaying:
             
-            print(command)
-            
             if command == "singlePlayer":
                 minesweeper.main(game_mode)
                 

@@ -2,6 +2,7 @@
 #import and initialize
 import pygame
 from Sprites import Mouse, Button, Label, Bomb
+from ColorTheme import ColorTheme
 pygame.init()
 
 def main(title: str, nameLabelList: str):
@@ -20,7 +21,7 @@ def main(title: str, nameLabelList: str):
     """
     
     pygame.font.init()
-    buttonColor = (0, 255, 255)
+    buttonColor = ColorTheme.BUTTON
     
     height = 200 + (len(nameLabelList) * 100)
     screen = pygame.display.set_mode((640, height))
@@ -28,7 +29,7 @@ def main(title: str, nameLabelList: str):
 
     #entities
     background=pygame.Surface(screen.get_size())
-    background.fill((0,255,0))
+    background.fill(ColorTheme.MENU_BG)
     screen.blit(background, (0,0))
     
     mouse = Mouse()
@@ -79,7 +80,6 @@ def main(title: str, nameLabelList: str):
                 for button in pygame.sprite.spritecollide(mouse, buttonGroup, False):
                     
                     buttonName = button.name
-                    print(buttonName)
                     keepGoing = False
                     
         buttonHovered = pygame.sprite.spritecollide(mouse, buttonGroup, False)

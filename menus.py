@@ -11,7 +11,6 @@ import menuBase
 
 pygame.init()
 
-
 def settingsMenu() -> tuple:
     
     title = "Settings"
