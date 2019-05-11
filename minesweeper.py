@@ -1,6 +1,8 @@
-# import and initialize
+"""Creates the main entry point and center for all game functionality."""
+from minefield.MineField import MineField
+from minefield.MineField import Cell
+from multiplayer import Client
 import pygame
-import MineField
 import time
 from mode import Mode
 from Sprites import *
@@ -15,17 +17,18 @@ setCellImageDir(cellImageDir)
 setWidgetImageDir(widgetImageDir)
 
 def showMines(boxGroup, field):
-    
+
     for box in boxGroup:
-        
+
         cell = field.get_cell_at(*box.coords)
         if (cell.is_mine() and not cell.is_flag()):
-            
+
             box.setBomb()
-            
+
         elif (not cell.is_mine() and cell.is_flag()):
-            
-            box.setIncorrectlyFlagged()   
+
+            box.setIncorrectlyFlagged()
+
 
 def get_open_cells(field: MineField, cell: 'Cell') -> list:
     """Get a list of open connected field cell coordinates.
@@ -72,7 +75,7 @@ def cell_to_box(boxes: list, field: MineField, cell: 'Cell') -> Box:
     return boxes[field.get_col() * cell.get_row() + cell.get_col()]
 
 
-def setupGame(numCol: int = 10, numRow: int = 10):
+def setupGame(field: MineField) -> tuple:
     # display
     pygame.display.set_caption("Minesweeper")
 
@@ -83,18 +86,14 @@ def setupGame(numCol: int = 10, numRow: int = 10):
     x = 0
     y = gameBarHeight
 
-    screenWidth = numCol * boxSize
-    screenHeight = (numRow * boxSize) + gameBarHeight
+    screenWidth = field.get_col() * boxSize
+    screenHeight = (field.get_row() * boxSize) + gameBarHeight
 
     screen = pygame.display.set_mode((screenWidth, screenHeight))
 
-    # -----entities------
-        # minefield
-    field = MineField.MineField(numRow, numCol)
-
     # background
     background = pygame.Surface(screen.get_size())
-    background.fill((150, 150, 150))
+    background.fill(ColorTheme.MINESWEEPER_BG)
     screen.blit(background, (0, 0))
 
     # mouse
@@ -103,11 +102,10 @@ def setupGame(numCol: int = 10, numRow: int = 10):
     # game bar and widgets (bomb counter, timer, and new game button )
     gameBar = GameBar(screen, gameBarHeight)
     gameBar.rect.topleft = (0,0)
-
     bombDigit1 = Digit(30, 30, 10, 10, 9)
     bombDigit2 = Digit(30, 30, 40, 10, 9)
     bombDigit3 = Digit(30, 30, 70, 10, 9)
-    
+
     timerDigit1 = Digit(30, 30, screen.get_width() - 90, 10, 9)
     timerDigit2 = Digit(30, 30, screen.get_width() - 60, 10, 9)
     timerDigit3 = Digit(30, 30, screen.get_width() - 30, 10, 9)
@@ -126,9 +124,9 @@ def setupGame(numCol: int = 10, numRow: int = 10):
     modeIndicator.rect.top = 10
 
     boxes = []
-    for r in range(numRow):
+    for r in range(field.get_row()):
         x = 0
-        for c in range(numCol):
+        for c in range(field.get_col()):
             box = Box(boxSize, (r, c))
             box.rect.left = x
             box.rect.top = y
@@ -137,15 +135,20 @@ def setupGame(numCol: int = 10, numRow: int = 10):
 
         y += boxSize
 
-    return screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, field, boxes, digitGroup
+    return screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, boxes, digitGroup
 
 
-def main(game_mode: Mode = Mode()):
-    numCol = game_mode.get_width()
-    numRow = game_mode.get_height()
+def main(game_mode: Mode = Mode(), client: Client = None):
+    if client is None:
+        field = MineField(game_mode.get_height(), game_mode.get_width())
+    else:
+        client.request_server_field()
+        time.sleep(1)
+        field: MineField = client.get_mine_field()
+
     fps = 30
 
-    screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, field, boxes, digitGroup = setupGame(numCol, numRow)
+    screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, boxes, digitGroup = setupGame(field)
 
     mouseGroup = pygame.sprite.Group(mouse)
     gameBarGroup = pygame.sprite.Group(gameBar)
@@ -173,26 +176,26 @@ def main(game_mode: Mode = Mode()):
                 boxClicked: Box = pygame.sprite.spritecollide(mouse, boxGroup,
                                                               False)
                 modeClick = mouse.rect.colliderect(modeIndicator.rect)
-                 
+
                 # Handle extraneous clicks
                 if not boxClicked and not replayClick and not modeClick:
                     continue
-                
+
                 if modeClick:
-                    
+
                     quick_flag = not quick_flag
-                    
+
                     if quick_flag:
                         modeIndicator.setQuickFlagMode()
-                        
+
                     else:
-                        modeIndicator.setNormalMode()   
-                        
+                        modeIndicator.setNormalMode()
+
                     continue
 
                 if replayClick:
-
-                    screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, field, boxes, digitGroup = setupGame(numCol, numRow)
+                    field = MineField(game_mode.get_height(), game_mode.get_width())
+                    screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, boxes, digitGroup = setupGame(field)
 
                     mouseGroup = pygame.sprite.Group(mouse)
                     gameBarGroup = pygame.sprite.Group(gameBar)
@@ -204,43 +207,43 @@ def main(game_mode: Mode = Mode()):
                     first_click = True
                     mineHit = False
 
-                if not mineHit: 
-                    
+                if not mineHit:
+
                     leftClick, middleClick, rightClick = pygame.mouse.get_pressed()
-    
+
                     if middleClick:
                         quick_flag = not quick_flag
-    
+
                     if quick_flag:
                         leftClick, rightClick = rightClick, leftClick
                         modeIndicator.setQuickFlagMode()
-                        
+
                     else:
                         modeIndicator.setNormalMode()
-    
+
                     if leftClick and not replayClick:
-    
+
                         cell: 'Cell' = field.get_cell_at(*boxClicked[0].coords)
-    
+
                         if first_click and cell.is_mine():
                             field.move_mine(cell)
-                            
+
                         if first_click:
-    
+
                             first_click = False
                             timer.init()
                             bombCounter.init()
-    
+
                         open_cells: list = get_open_cells(field, cell)
                         boxes_affected: list = [
                             cell_to_box(boxes, field, cell)for cell in open_cells
                         ]
                     else:
                         boxes_affected: list = boxClicked
-    
+
                     for box in boxes_affected:
                         cell: 'Cell' = field.get_cell_at(*box.coords)
-    
+
                         if leftClick and not cell.is_flag() and not \
                                 cell.is_clicked():
                             cell.set_clicked(True)
@@ -253,14 +256,14 @@ def main(game_mode: Mode = Mode()):
                             else:
                                 box.setNum(repr(cell))
                                 playButton.surprised()
-    
+
                         if rightClick:
                             if cell.is_clicked() and not cell.is_flag():
                                 continue
                             cell.set_flag(not cell.is_flag())
                             field.add_flagged()
                             cell.set_clicked(not cell.is_clicked())
-    
+
                             if cell.is_flag():
                                 box.setFlagged()
                                 bombCounter.dec()
@@ -269,7 +272,7 @@ def main(game_mode: Mode = Mode()):
                                 field.subtract_flagged()
                                 bombCounter.inc()
             elif event.type == pygame.MOUSEBUTTONUP:
-                 
+
                 if not mineHit:
                     playButton.happy()
 
