@@ -290,7 +290,7 @@ class ModeIndicator(pygame.sprite.Sprite):
             
 class Button(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, name, color):
+    def __init__(self, x, y, name):
         pygame.sprite.Sprite.__init__(self)
         self.name = name
         self.image = pygame.Surface((300, 70))
@@ -328,9 +328,9 @@ class Label(pygame.sprite.Sprite):
         self.text = text
         self.loc = loc
         self.alignment = alignment
+        self.color = color
         self.bgColor = bgColor
         self.size = size
-        self.color = color
 
         self.font = pygame.font.SysFont("None", size)
         self.image = self.font.render(self.text, 1, self.color, self.bgColor)
@@ -364,6 +364,23 @@ class Label(pygame.sprite.Sprite):
         self.image = self.font.render(self.text, 1, self.color, self.bgColor)
         self.rect = self.image.get_rect()
         self.align()
+        
+    def renderText(self, text):
+        
+        self.text = text
+        self.image = self.font.render(self.text, 1, self.color, self.bgColor)
+        self.rect = self.image.get_rect()
+        self.align()
+        
+    def focus(self):
+        
+        self.bgColor = ColorTheme.TEXTBOX_FOCUS
+        self.render()
+        
+    def unfocus(self):
+        
+        self.bgColor = ColorTheme.TEXTBOX_UNFOCUS
+        self.render()
         
     def hover(self):
         
@@ -428,3 +445,33 @@ class Bomb(pygame.sprite.Sprite):
         
         self.image = pygame.transform.rotate(
                                 pygame.image.load(self.imgSrc).convert_alpha(), self.degrees)
+        
+class InputBox(pygame.sprite.Sprite):
+    
+    def __init__(self, name: str, size: tuple, loc: tuple):
+        
+        pygame.sprite.Sprite.__init__(self)
+        
+        self.name = name
+        self.focused = False
+        self.loc = loc
+        
+        self.image = pygame.Surface(size)
+        self.image.fill(ColorTheme.TEXTBOX_UNFOCUS)
+        self.rect = self.image.get_rect()
+        self.rect.center = loc
+        
+    def focus(self):
+        
+        self.focused = True
+        self.image.fill(ColorTheme.TEXTBOX_FOCUS)
+        
+    def unfocus(self):
+        
+        self.focused = False
+        self.image.fill(ColorTheme.TEXTBOX_UNFOCUS)
+        
+        
+        
+        
+    

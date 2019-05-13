@@ -21,7 +21,6 @@ def main(title: str, nameLabelList: str):
     """
     
     pygame.font.init()
-    buttonColor = ColorTheme.BUTTON
     
     height = 200 + (len(nameLabelList) * 100)
     screen = pygame.display.set_mode((640, height))
@@ -43,8 +42,8 @@ def main(title: str, nameLabelList: str):
     
     for label in nameLabelList:
         
-        buttonGroup.add(Button(screen.get_width() / 2, vPos, label[0], buttonColor))
-        labelGroup.add(Label(label[0], label[1], (screen.get_width() / 2, vPos), 0, buttonColor))
+        buttonGroup.add(Button(screen.get_width() / 2, vPos, label[0]))
+        labelGroup.add(Label(label[0], label[1], (screen.get_width() / 2, vPos), 0, ColorTheme.BUTTON))
         vPos += inc
         
     bombs = []

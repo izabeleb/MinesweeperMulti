@@ -19,3 +19,6 @@ class ColorTheme:
     
     MINESWEEPER_BG = (150, 150, 150)
     
+    TEXTBOX_UNFOCUS = (200, 200, 200)
+    TEXTBOX_FOCUS = (255, 255, 255)
+    

@@ -8,6 +8,7 @@ from mode import Mode
 import pygame
 import minesweeper
 import menus
+import enterHostnamePort
 pygame.init()
 
 
@@ -32,7 +33,9 @@ def program():
                 
             elif command == "multiPlayer":
                 
-                pass
+                hostname, port = enterHostnamePort.main()
+                print(f"Hostname: {hostname}")
+                print(f"Port: {port}")
             
             elif command == "settings":
                 donePlaying, game_mode = menus.settingsMenu()
