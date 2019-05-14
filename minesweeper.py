@@ -16,6 +16,7 @@ widgetImageDir = "images/widgets"
 setCellImageDir(cellImageDir)
 setWidgetImageDir(widgetImageDir)
 
+
 def showMines(boxGroup, field):
 
     for box in boxGroup:
@@ -140,10 +141,9 @@ def setupGame(field: MineField) -> tuple:
 
 def main(game_mode: Mode = Mode(), client: Client = None):
     if client is None:
-        field = MineField(game_mode.get_height(), game_mode.get_width())
+        field: MineField = MineField(game_mode.get_height(),
+                                     game_mode.get_width())
     else:
-        client.request_server_field()
-        time.sleep(1)
         field: MineField = client.get_mine_field()
 
     fps = 30
@@ -190,6 +190,7 @@ def main(game_mode: Mode = Mode(), client: Client = None):
 
                     else:
                         modeIndicator.setNormalMode()
+                        modeIndicator.setNormalMode()
 
                     continue
 
@@ -226,10 +227,11 @@ def main(game_mode: Mode = Mode(), client: Client = None):
                         cell: 'Cell' = field.get_cell_at(*boxClicked[0].coords)
 
                         if first_click and cell.is_mine():
-                            field.move_mine(cell)
+                            new_loc: tuple = field.move_mine(cell)
+                            old_loc: tuple = (cell.get_row(), cell.get_col())
+                            client.move_mine(old_loc, new_loc)
 
                         if first_click:
-
                             first_click = False
                             timer.init()
                             bombCounter.init()
@@ -247,6 +249,11 @@ def main(game_mode: Mode = Mode(), client: Client = None):
                         if leftClick and not cell.is_flag() and not \
                                 cell.is_clicked():
                             cell.set_clicked(True)
+
+                            if client is not None:
+                                client.send_change(cell.get_row(),
+                                                  cell.get_col(),
+                                                  'HIT')
                             if cell.is_mine():
                                 box.setBomb()
                                 mineHit = True
@@ -263,6 +270,9 @@ def main(game_mode: Mode = Mode(), client: Client = None):
                             cell.set_flag(not cell.is_flag())
                             field.add_flagged()
                             cell.set_clicked(not cell.is_clicked())
+                            client.send_change(cell.get_row(),
+                                               cell.get_col(),
+                                               'FLAG')
 
                             if cell.is_flag():
                                 box.setFlagged()
@@ -271,8 +281,8 @@ def main(game_mode: Mode = Mode(), client: Client = None):
                                 box.setDefault()
                                 field.subtract_flagged()
                                 bombCounter.inc()
-            elif event.type == pygame.MOUSEBUTTONUP:
 
+            elif event.type == pygame.MOUSEBUTTONUP:
                 if not mineHit:
                     playButton.happy()
 

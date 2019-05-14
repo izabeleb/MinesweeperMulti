@@ -31,7 +31,6 @@ def program():
                 minesweeper.main(game_mode)
                 
             elif command == "multiPlayer":
-                
                 pass
             
             elif command == "settings":
@@ -39,5 +38,7 @@ def program():
 
     pygame.quit()
     game_mode.store_mode()
-    
-program()
+
+
+if __name__ == '__main__':
+    program()

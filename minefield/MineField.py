@@ -226,7 +226,15 @@ class MineField:
     def get_cell_at(self, row: int, col: int) -> 'Cell':
         return self._mine_field[row][col]
 
-    def move_mine(self, cell: Cell) -> None:
+    def move_mine(self, cell: Cell) -> tuple:
+        """Move a mine to another location in the mine field.
+
+        Args:
+            cell (Cell): the cell with the mine to be moved.
+
+        Returns:
+            (tuple): a tuple of the new mine coordinates.
+        """
         randRow = randint(0, self._max_row - 1)
         randCol = randint(0, self._max_col - 1)
 
@@ -236,3 +244,5 @@ class MineField:
 
         self._mine_field[randRow][randCol].set_mine(True)
         cell.set_mine(False)
+
+        return randRow, randCol
