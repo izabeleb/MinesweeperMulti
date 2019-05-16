@@ -93,6 +93,19 @@ class Client(asyncio.Protocol):
 
         self.transport.write(change_len + change_json)
 
+    def move_mine(self, old_loc: tuple, new_loc: tuple) -> None:
+        """Notify the server that a mine has been relocated.
+
+        Args:
+            old_loc (tuple): the coordinates of the mine's current
+                position.
+            new_loc (tuple): the coordinates to which to move the mine.
+        """
+        mine_json: dict = {'MINECHANGE': {'OLD': old_loc, 'NEW': new_loc}}
+        mine_json: bytes = json.dumps(mine_json)
+        mine_len: bytes = Client.get_packet_size(mine_json)
+        self.transport.write(mine_len + mine_json)
+
     def get_mine_field(self) -> MineField:
         return self._mine_field
 
@@ -107,3 +120,7 @@ def run_client(host: str = 'localhost', port: int = 8080):
         loop.run_forever()
     finally:
         loop.close()
+
+
+if __name__ == '__main__':
+    run_client()

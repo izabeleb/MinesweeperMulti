@@ -15,32 +15,34 @@ pygame.init()
 def program():
     """
     This program directs the flow of control
-    
-    Contains the menu, singleplayer, etc. 
+
+    Contains the menu, singleplayer, etc.
     """
 
     donePlaying = False
     game_mode: Mode = Mode.restore_mode()
-    
+
     while not donePlaying:
-        
+
         donePlaying, command = menus.mainMenu()
 
         if not donePlaying:
-            
+
             if command == "singlePlayer":
                 minesweeper.main(game_mode)
-                
+
             elif command == "multiPlayer":
-                
+
                 hostname, port = enterHostnamePort.main()
                 print(f"Hostname: {hostname}")
                 print(f"Port: {port}")
-            
+
             elif command == "settings":
                 donePlaying, game_mode = menus.settingsMenu()
 
     pygame.quit()
     game_mode.store_mode()
-    
-program()
+
+
+if __name__ == '__main__':
+    program()

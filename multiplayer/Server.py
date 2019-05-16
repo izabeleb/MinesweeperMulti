@@ -62,10 +62,14 @@ class Server(asyncio.Protocol):
         """Handle data read from the client.
 
         Data is in JSON format, with any of the following fields:
-            COL     Column number
-            ROW     Row number
-            ACTION  The action maade by the user (eg. HIT, FLAG, or
-                    FIELD)
+                   COL  Column number
+                   ROW  Row number
+                ACTION  The action made by the user (eg. HIT, FLAG, or
+                        FIELD)
+            MINECHANGE  The location of a mine is being changed. Will
+                        contain the sub-fields: 'OLD' and 'NEW'
+                        specifying the old and new locations for
+                        the mine.
         If the ACTION is FIELD the servers encoded field is returned.
 
         Args:
@@ -102,6 +106,13 @@ class Server(asyncio.Protocol):
 
                 if action != 'FIELD':
                     self.broadcast_change(packet)
+
+            if 'MINECHANGE' in packet:
+                self.broadcast_change(packet)
+                old_loc: list = packet['MINECHANGE']['OLD']
+                new_loc: list = packet['MINECHANGE']['NEW']
+                Server.mine_field.get_cell_at(*old_loc).set_mine(False)
+                Server.mine_field.get_cell_at(*new_loc).set_mine(True)
 
     def reply_server_field(self) -> None:
         """Send the server mine_field to the client."""
