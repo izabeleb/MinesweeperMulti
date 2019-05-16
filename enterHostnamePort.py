@@ -24,12 +24,12 @@ def main():
     lblPort = Label("lblPort", "Port", (screen.get_width() / 2, 250), 0)
     lblGroup = pygame.sprite.Group(lblHostname, lblPort)
     
-    txtHostname = InputBox("txtHostname", (300, 70), (screen.get_width() / 2, 170))
-    txtPort = InputBox("txtPort", (300, 70), (screen.get_width() / 2, 320))
+    txtHostname = InputBox("txtHostname", (450, 70), (screen.get_width() / 2, 170))
+    txtPort = InputBox("txtPort", (450, 70), (screen.get_width() / 2, 320))
     txtGroup = pygame.sprite.Group(txtHostname, txtPort)
     
-    inputHostname = Label("txtHostname", "", (screen.get_width() / 2, 170), 0, None, 30, (0, 0, 0))
-    inputPort = Label("txtPort", "", (screen.get_width() / 2, 320), 0, None, 30, (0, 0, 0))
+    inputHostname = Label("txtHostname", "", (screen.get_width() / 2, 170), 0, None, 20, (0, 0, 0))
+    inputPort = Label("txtPort", "", (screen.get_width() / 2, 320), 0, None, 20, (0, 0, 0))
     inputGroup = pygame.sprite.Group(inputHostname, inputPort)
     
     lblSave = Label("save", "Save", (screen.get_width() / 2, 450), 0)
@@ -50,8 +50,20 @@ def main():
     port = ""
     
     #loop
-    while keepGoing:
-
+    while keepGoing:  
+        
+        # This block allows backspace key to delete multiple characters
+        keys = pygame.key.get_pressed()
+        
+        if keys[pygame.K_BACKSPACE]:
+                    
+            textString = textString[:-1]
+            
+            for inputLabel in inputGroup.sprites():
+                                
+                if inputLabel.name == activeTextBox:
+                                    
+                    inputLabel.renderText(textString)
 
         #time
         clock.tick(30)
@@ -105,24 +117,22 @@ def main():
                             if inputBox.name == activeTextBox:
                                 
                                 inputBox.focus()
-                    
             
             elif event.type == pygame.KEYDOWN:
-            
-                if event.key in range(pygame.K_a, pygame.K_z + 1) or event.key in range(pygame.K_0, pygame.K_9 + 1):
+                
+                # add other characters needed for hostnames and ports in a better way
+                if (event.key in range(pygame.K_a, pygame.K_z + 1) or 
+                    event.key in range(pygame.K_0, pygame.K_9 + 1) or
+                    event.key == pygame.K_PERIOD or 
+                    event.key == pygame.K_MINUS):
                     
                     textString += event.unicode
-                            
-                elif event.key == pygame.K_BACKSPACE:
                     
-                    textString = textString[:-1]
-                    
-                for inputLabel in inputGroup.sprites():
-                            
-                    if inputLabel.name == activeTextBox:
+                    for inputLabel in inputGroup.sprites():
                                 
-                        inputLabel.renderText(textString)
-                    
+                        if inputLabel.name == activeTextBox:
+                                    
+                            inputLabel.renderText(textString)                    
                     
         btnHovered = pygame.sprite.spritecollide(mouse, btnGroup, False)
         
