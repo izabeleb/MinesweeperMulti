@@ -40,6 +40,9 @@ class Server(asyncio.Protocol):
         return struct.pack('!I', len(packet))
 
     def __init__(self, row: int = 10, col: int = 10) -> None:
+        self._buffer: bytes = b''
+        self.transport = None
+        self._address: tuple = None
         if Server.mine_field is None:
             Server.mine_field = MineField(row, col)
 
@@ -52,11 +55,10 @@ class Server(asyncio.Protocol):
         """
         self.transport = transport
         self._address: tuple = self.transport.get_extra_info('peername')
-        self._buffer: bytes = b''
-
+        self.transport.write(Server.mine_field.encode())
         Server.transport_list.append(self.transport)
 
-        print(f'Accepted connection form {self.address}')
+        print(f'Accepted connection form {self._address}')
 
     def data_received(self, data: bytes) -> None:
         """Handle data read from the client.
@@ -81,9 +83,12 @@ class Server(asyncio.Protocol):
             packet_length: int = struct.unpack('!I', self._buffer[:4:])[0]
 
             if len(self._buffer) < 4 + packet_length:
-                break
-            packet: dict = json.loads(self._buffer[4:packet_length:].decode())
-            self._buffer = self._buffer[4 + packet_length::]
+                continue
+
+            self._buffer = self._buffer[4::]
+
+            packet: dict = json.loads(self._buffer[:packet_length:].decode())
+            self._buffer = self._buffer[packet_length::]
 
             affected_row: int = -1
             affected_col: int = -1
@@ -94,6 +99,15 @@ class Server(asyncio.Protocol):
                 affected_col = packet['COL']
             if 'ACTION' in packet:
                 action: str = packet['ACTION']
+
+                if action == "FIELD":
+                    packet: bytes = Server.mine_field.encode()
+                    self.transport.write(Server.get_packet_size(packet) +
+                                         Server.mine_field.encode())
+                    print(f'Field sent to '
+                          f'{self.transport.get_extra_info("peername")}')
+                    continue
+
                 affected_cell = Server.mine_field.get_cell_at(affected_row,
                                                               affected_col)
                 if action == 'FLAG':
@@ -101,11 +115,6 @@ class Server(asyncio.Protocol):
                     affected_cell.set_clicked(True)
                 elif action == 'HIT':
                     affected_cell.set_clicked(True)
-                elif action == 'FIELD':
-                    self.reply_server_field()
-
-                if action != 'FIELD':
-                    self.broadcast_change(packet)
 
             if 'MINECHANGE' in packet:
                 self.broadcast_change(packet)
@@ -113,10 +122,6 @@ class Server(asyncio.Protocol):
                 new_loc: list = packet['MINECHANGE']['NEW']
                 Server.mine_field.get_cell_at(*old_loc).set_mine(False)
                 Server.mine_field.get_cell_at(*new_loc).set_mine(True)
-
-    def reply_server_field(self) -> None:
-        """Send the server mine_field to the client."""
-        self.transport.write(Server.mine_field.encode())
 
     def broadcast_change(self, change_dict: dict) -> None:
         """Broadcast the change made by the user.
@@ -133,13 +138,13 @@ class Server(asyncio.Protocol):
                 self.transport.write(change_length + change_json)
 
 
-def run_server(host: str, port: int):
+def run_server(host: str, port: int) -> None:
     loop = asyncio.get_event_loop()
     coro = loop.create_server(Server, host, port)
-
     server = loop.run_until_complete(coro)
+
     try:
-        loop.run_forecver()
+        loop.run_forever()
     except KeyboardInterrupt:
         server.close()
         loop.close()
@@ -147,17 +152,3 @@ def run_server(host: str, port: int):
     finally:
         server.close()
         loop.close()
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='TCP File Uploader')
-    parser.add_argument('--host', default='localhost', dest="host",
-                        help='interface the client sends to')
-    parser.add_argument('-p', '--port', type=int, default=8080,
-                        help='TCP port', dest="port")
-    # parser.add_argument('-e', '--encrypt', action='store_true',
-    #                   dest='encrypt', help='encrypt the chat communications')
-
-    args = parser.parse_args()
-
-    run_server(args.host, args.port)

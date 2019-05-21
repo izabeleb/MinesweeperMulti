@@ -1,6 +1,7 @@
 from random import randint
 from minefield.Cell import Cell
 import json
+import struct
 
 
 class BadField(Exception):
@@ -148,8 +149,9 @@ class MineField:
                          'IS_CLICKED': cell.is_clicked()}
             json_dict['CELLS'].append(cell_dict)
         json_str: str = json.dumps(json_dict)
+        json_len: bytes = struct.pack('!I', len(json_str))
 
-        return json_str.encode(encoding)
+        return json_len + json_str.encode(encoding)
 
     def surrounding_cells(self, cell: Cell) -> Cell:
         """Generator for cells surrounding the target cell.

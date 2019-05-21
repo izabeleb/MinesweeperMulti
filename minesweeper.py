@@ -2,10 +2,9 @@
 from minefield.MineField import MineField
 from minefield.MineField import Cell
 from multiplayer import Client
-import pygame
-import time
 from mode import Mode
 from Sprites import *
+from time import sleep
 
 pygame.init()
 screen = pygame.display.set_mode((640, 480))
@@ -145,6 +144,8 @@ def main(game_mode: Mode = Mode(), client: Client = None):
                                      game_mode.get_width())
     else:
         field: MineField = client.get_mine_field()
+        print(field)
+        exit()
 
     fps = 30
 

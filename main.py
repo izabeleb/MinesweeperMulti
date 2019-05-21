@@ -5,6 +5,7 @@ Created on Sun May  5 21:05:27 2019
 @author: bauzy
 """
 from mode import Mode
+from multiplayer.Client import run_client
 import pygame
 import minesweeper
 import menus
@@ -30,13 +31,11 @@ def program():
 
             if command == "singlePlayer":
                 minesweeper.main(game_mode)
-
             elif command == "multiPlayer":
-
-                hostname, port = enterHostnamePort.main()
-                print(f"Hostname: {hostname}")
-                print(f"Port: {port}")
-
+                # hostname, port = enterHostnamePort.main()
+                hostname = 'localhost'  # '192.168.0.10'
+                port = 8080
+                run_client(hostname, port, game_mode)
             elif command == "settings":
                 donePlaying, game_mode = menus.settingsMenu()
 
