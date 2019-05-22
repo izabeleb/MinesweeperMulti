@@ -64,7 +64,7 @@ class MineField:
         return MineField(mine_field=mine_field)
 
     def __init__(self, row: int = 10, col: int = 10,
-                 mine_field: list = None) -> None:
+                 mine_field: list = None, mine_count: int = None) -> None:
         if mine_field is not None:
             self._mine_field = mine_field
             self._max_row = len(self._mine_field)
@@ -74,7 +74,11 @@ class MineField:
             self._max_col = col
 
             # TODO research more effective bomb distribution ratios
-            self._mine_count = row * col // 4
+            if mine_count is None:
+                self._mine_count = row * col // 4
+            else:         
+                self._mine_count = mine_count
+                
             self._flagged_count = 0
             self._mine_field = [
                 [Cell(r, c) for c in range(self._max_col)]

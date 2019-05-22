@@ -9,7 +9,7 @@ from multiplayer.Client import run_client
 import pygame
 import minesweeper
 import menus
-import enterHostnamePort
+import inputBase
 pygame.init()
 
 
@@ -32,7 +32,7 @@ def program():
             if command == "singlePlayer":
                 minesweeper.main(game_mode)
             elif command == "multiPlayer":
-                # hostname, port = enterHostnamePort.main()
+                #hostname, port = inputBase.main(["Hostname", "Port"])
                 hostname = 'localhost'  # '192.168.0.10'
                 port = 8080
                 run_client(hostname, port, game_mode)

@@ -290,10 +290,12 @@ class ModeIndicator(pygame.sprite.Sprite):
             
 class Button(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, name):
+    def __init__(self, x, y, name, width = 300, height = 70):
         pygame.sprite.Sprite.__init__(self)
         self.name = name
-        self.image = pygame.Surface((300, 70))
+        self.width = width
+        self.height = height
+        self.image = pygame.Surface((self.width, self.height))
         self.image.fill(ColorTheme.BUTTON)
         self.rect = self.image.get_rect()
         self.rect.centerx = x

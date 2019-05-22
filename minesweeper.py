@@ -12,6 +12,9 @@ screen = pygame.display.set_mode((640, 480))
 cellImageDir = "images/cells"
 widgetImageDir = "images/widgets"
 
+gameBarHeight = 50
+boxSize = 30
+
 setCellImageDir(cellImageDir)
 setWidgetImageDir(widgetImageDir)
 
@@ -79,9 +82,6 @@ def setupGame(field: MineField) -> tuple:
     # display
     pygame.display.set_caption("Minesweeper")
 
-    gameBarHeight = 50
-    boxSize = 30
-
     # for generating a grid of boxes
     x = 0
     y = gameBarHeight
@@ -141,7 +141,8 @@ def setupGame(field: MineField) -> tuple:
 def main(game_mode: Mode = Mode(), client: Client = None):
     if client is None:
         field: MineField = MineField(game_mode.get_height(),
-                                     game_mode.get_width())
+                                     game_mode.get_width(),
+                                     None, game_mode.get_bomb_count())
     else:
         field: MineField = client.get_mine_field()
         print(field)
@@ -196,7 +197,7 @@ def main(game_mode: Mode = Mode(), client: Client = None):
                     continue
 
                 if replayClick:
-                    field = MineField(game_mode.get_height(), game_mode.get_width())
+                    field = MineField(game_mode.get_height(), game_mode.get_width(), None, game_mode.get_bomb_count())
                     screen, background, mouse, gameBar, bombCounter, timer, playButton, modeIndicator, boxes, digitGroup = setupGame(field)
 
                     mouseGroup = pygame.sprite.Group(mouse)
@@ -230,7 +231,9 @@ def main(game_mode: Mode = Mode(), client: Client = None):
                         if first_click and cell.is_mine():
                             new_loc: tuple = field.move_mine(cell)
                             old_loc: tuple = (cell.get_row(), cell.get_col())
-                            client.move_mine(old_loc, new_loc)
+                            
+                            if client != None:
+                                client.move_mine(old_loc, new_loc)
 
                         if first_click:
                             first_click = False
@@ -271,7 +274,9 @@ def main(game_mode: Mode = Mode(), client: Client = None):
                             cell.set_flag(not cell.is_flag())
                             field.add_flagged()
                             cell.set_clicked(not cell.is_clicked())
-                            client.send_change(cell.get_row(),
+                            
+                            if client != None:
+                                client.send_change(cell.get_row(),
                                                cell.get_col(),
                                                'FLAG')
 

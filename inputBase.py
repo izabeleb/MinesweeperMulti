@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue May 21 23:18:46 2019
+
+@author: bauzy
+"""
+
 
 #import and initialize
 import pygame
@@ -5,49 +12,60 @@ from Sprites import Mouse, Label, InputBox, Button
 from ColorTheme import ColorTheme
 pygame.init()
 
-def main():
+def main(inputList: list):
+    """
+    Accepts a list of inputs needed as display strings
+    returns inputs as an unpacked list
+    """
 
     pygame.font.init()
     
-    screen = pygame.display.set_mode((640, 550))
     #display
+    screen = pygame.display.set_mode((640, 550))
 
-    #entities
-    background=pygame.Surface(screen.get_size())
-    background.fill(ColorTheme.MENU_BG)
-    screen.blit(background, (0,0))
-    
+    #entities    
     mouse = Mouse()
     mouseGroup = pygame.sprite.Group(mouse)
     
-    lblHostname = Label("lblHostname", "Hostname", (screen.get_width() / 2, 100), 0)
-    lblPort = Label("lblPort", "Port", (screen.get_width() / 2, 250), 0)
-    lblGroup = pygame.sprite.Group(lblHostname, lblPort)
+    lblGroup = pygame.sprite.Group()
+    txtGroup = pygame.sprite.Group()
+    inputGroup = pygame.sprite.Group()
     
-    txtHostname = InputBox("txtHostname", (450, 70), (screen.get_width() / 2, 170))
-    txtPort = InputBox("txtPort", (450, 70), (screen.get_width() / 2, 320))
-    txtGroup = pygame.sprite.Group(txtHostname, txtPort)
+    lblHeight = 100
+    inputHeight = 170
     
-    inputHostname = Label("txtHostname", "", (screen.get_width() / 2, 170), 0, None, 20, (0, 0, 0))
-    inputPort = Label("txtPort", "", (screen.get_width() / 2, 320), 0, None, 20, (0, 0, 0))
-    inputGroup = pygame.sprite.Group(inputHostname, inputPort)
+    heightInc = 150
+    buttonGap = 50
     
-    lblSave = Label("save", "Save", (screen.get_width() / 2, 450), 0)
-    btnSave = Button(screen.get_width() / 2, 450, "save")
+    for inputItem in inputList:
+        
+        lblGroup.add(Label(f"lbl{inputItem}", f"{inputItem}", (screen.get_width() / 2, lblHeight), 0))
+        txtGroup.add(InputBox(f"txt{inputItem}", (450, 70), (screen.get_width() / 2, inputHeight)))
+        inputGroup.add(Label(f"txt{inputItem}", "", (screen.get_width() / 2, inputHeight), 0, None, 20, (0, 0, 0)))
+        
+        lblHeight += heightInc
+        inputHeight += heightInc
+    
+    lblSave = Label("save", "Save", (screen.get_width() / 2, lblHeight + buttonGap), 0)
+    btnSave = Button(screen.get_width() / 2, lblHeight + buttonGap, "save")
     
     btnGroup = pygame.sprite.Group(btnSave, lblSave)
     
     sprites = [mouseGroup, lblGroup, txtGroup, inputGroup, btnGroup]
+
+    # fix screen size
+    screenHeight = lblHeight + btnSave.height + buttonGap
+    screen = pygame.display.set_mode((640, screenHeight))
+    
+    background=pygame.Surface(screen.get_size())
+    background.fill(ColorTheme.MENU_BG)
+    screen.blit(background, (0,0))
 
     #assign
     clock = pygame.time.Clock()
     keepGoing = True
     textString = ""
     activeTextBox = ""
-    
-    # can enter some defaults here
-    hostname = ""
-    port = ""
     
     #loop
     while keepGoing:  
@@ -66,7 +84,7 @@ def main():
                     inputLabel.renderText(textString)
 
         #time
-        clock.tick(30)
+        clock.tick(15)
 
         #events
         for event in pygame.event.get():
@@ -79,8 +97,6 @@ def main():
                     
                     # save button is clicked
                     keepGoing = False
-                    hostname = inputHostname.text
-                    port = inputPort.text
                 
                 # textbox is clicked
                 for inputClicked in pygame.sprite.spritecollide(mouse, txtGroup, False):
@@ -158,7 +174,13 @@ def main():
         #refresh
         pygame.display.flip()
         
-    return hostname, port
+    typedText = []
+    
+    for inputItem in inputGroup:
+        
+        typedText.append(inputItem.text)
+        
+    return (*typedText,)
 
 if __name__ == "__main__":
     main()

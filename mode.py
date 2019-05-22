@@ -2,15 +2,20 @@ import os
 import json
 
 class Mode:
-    MODE_EASY: dict = {'HEIGHT': 10, 'WIDTH': 10}
-    MODE_NORMAL: dict = {'HEIGHT': 20, 'WIDTH': 20}
-    MODE_HARD: dict = {'HEIGHT': 30, 'WIDTH': 30}
+    MODE_EASY: dict = {'HEIGHT': 10, 'WIDTH': 10, "BOMBS": 25}
+    MODE_NORMAL: dict = {'HEIGHT': 20, 'WIDTH': 20, "BOMBS" : 100}
+    MODE_HARD: dict = {'HEIGHT': 30, 'WIDTH': 30, "BOMBS" : 225}
 
-    def __init__(self, mode: dict = None, height: int = 20, width: int = 20)-> None:
+    def __init__(self, mode: dict = None, height: int = 20, width: int = 20, bombs: int = None)-> None:
+        
+        if bombs is None:
+            
+            bombs = height * width // 4
+        
         if mode is not None:
             self.mode = mode
         else:
-            self.mode = {'HEIGHT': height, 'WIDTH': width}
+            self.mode = {'HEIGHT': height, 'WIDTH': width, 'BOMBS': bombs}
 
     @staticmethod
     def restore_mode(path='setings.json') -> 'Mode':
@@ -35,3 +40,6 @@ class Mode:
 
     def get_width(self) -> int:
         return self.mode['WIDTH']
+    
+    def get_bomb_count(self) -> int:
+        return self.mode['BOMBS']
