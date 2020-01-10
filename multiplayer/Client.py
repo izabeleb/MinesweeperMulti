@@ -55,8 +55,7 @@ class Client(asyncio.Protocol):
             affected_col: int = -1
 
             if 'CELLS' in packet:
-                self._mine_field = MineField.decode(
-                    self._buffer[:packet_length:])
+                self._mine_field = MineField.decode(self._buffer[:packet_length:])
                 print('field received')
 
             if 'ROW' in packet:
@@ -125,15 +124,17 @@ class Client(asyncio.Protocol):
         return self._mine_field
 
 
-def run_client(host: str = 'localhost', port: int = 8080,
-               game_mode: Mode = Mode()) -> None:
+def run_client(host: str = 'localhost', port: int = 8080, game_mode: Mode = Mode()) -> None:
     loop = asyncio.get_event_loop()
-    coro = loop.create_connection(Client, host, port)
+    client = Client()
+
+    coro = loop.create_connection(lambda: client, host, port)
+
     client = loop.run_until_complete(coro)
 
     print(client[1].get_mine_field())
 
-    # minesweeper.main(game_mode, client[1])
+    minesweeper.main(game_mode, client[1])
 
     try:
         loop.run_forever()

@@ -145,8 +145,6 @@ def main(game_mode: Mode = Mode(), client: Client = None):
                                      None, game_mode.get_bomb_count())
     else:
         field: MineField = client.get_mine_field()
-        print(field)
-        exit()
 
     fps = 30
 

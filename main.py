@@ -33,7 +33,7 @@ def program():
                 minesweeper.main(game_mode)
             elif command == "multiPlayer":
                 #hostname, port = inputBase.main(["Hostname", "Port"])
-                hostname = 'localhost'  # '192.168.0.10'
+                hostname = 'localhost'
                 port = 8080
                 run_client(hostname, port, game_mode)
             elif command == "settings":

@@ -65,6 +65,8 @@ class MineField:
 
     def __init__(self, row: int = 10, col: int = 10,
                  mine_field: list = None, mine_count: int = None) -> None:
+        self._mine_count = -1
+
         if mine_field is not None:
             self._mine_field = mine_field
             self._max_row = len(self._mine_field)

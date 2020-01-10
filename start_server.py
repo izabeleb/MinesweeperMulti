@@ -4,7 +4,7 @@ import argparse
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='TCP File Uploader')
+    parser = argparse.ArgumentParser()
     parser.add_argument('--host', default='localhost', dest="host",
                         help='interface the client sends to')
     parser.add_argument('-p', '--port', type=int, default=8080,
