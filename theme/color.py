@@ -5,8 +5,9 @@ Created on Sat May 11 17:48:45 2019
 @author: bauzy
 """
 
+
 class ColorTheme:
-    
+    """Wrapper class for game color themes"""
     BUTTON = (80, 80, 120)
     BUTTON_HOVER = (100, 100, 150)
     MENU_HEADING = (255, 255, 255)
@@ -21,4 +22,3 @@ class ColorTheme:
     
     TEXTBOX_UNFOCUS = (200, 200, 200)
     TEXTBOX_FOCUS = (255, 255, 255)
-    
