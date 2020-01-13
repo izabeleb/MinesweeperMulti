@@ -1,4 +1,5 @@
 #!/bin/python
+"""Provides entrypoint and command line interface for starting game server."""
 import argparse
 from multiplayer import server
 

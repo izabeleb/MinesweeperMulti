@@ -31,7 +31,7 @@ class Mode:
     def width(self) -> int:
         """Retrieve the width of the game board."""
         return self.mode['width']
-    
+
     def bomb_count(self) -> int:
         """Retrieve the amount of bombs in the game board."""
         return self.mode['bombs']

@@ -1,6 +1,7 @@
+"""Provides game color and sprite theme information"""
 import pygame
-from theme.color import *
+from theme import color
 from theme import sprites
-from theme._constants import *
+from theme.constants import *
 
 pygame.init()

@@ -1,25 +1,33 @@
 """Creates the main entry point and center for all game functionality."""
-from menu import Mode
-from multiplayer import client
-from theme.sprites import *
-from .utils import *
+from __future__ import annotations
+from typing import List
+from typing import TYPE_CHECKING
+import pygame
+from minesweeper import Mode
+from minesweeper import Cell, MineField
+from minesweeper.utils import show_mines, get_open_cells, cell_to_box
+from theme.sprites import BombCounter, Box, Digit, GameBar, Mouse, ModeIndicator, PlayButton, Timer
+from theme.color import ColorTheme
+from theme.constants import GAME_BAR_HEIGHT, BOX_SIZE
 
-screen = pygame.display.set_mode((640, 480))
-
-gameBarHeight = 50
-boxSize = 30
+if TYPE_CHECKING:
+    from multiplayer.client import Client
 
 
 def setup_board(field: MineField) -> tuple:
+    """Setup the gaem board window
+
+    Args:
+        field (MineField): The minefield to use when generating
+
+    Returns:
+        (tuple): Specifying board sprites and sprite groups used in the board.
+    """
     # display
     pygame.display.set_caption("Minesweeper")
 
-    # for generating a grid of boxes
-    x = 0
-    y = gameBarHeight
-
-    screen_width = field.max_col * boxSize
-    screen_height = (field.max_row * boxSize) + gameBarHeight
+    screen_width = field.max_col * BOX_SIZE
+    screen_height = (field.max_row * BOX_SIZE) + GAME_BAR_HEIGHT
 
     screen = pygame.display.set_mode((screen_width, screen_height))
 
@@ -32,7 +40,7 @@ def setup_board(field: MineField) -> tuple:
     mouse = Mouse()
 
     # game bar and widgets (bomb counter, timer, and new game button )
-    game_bar = GameBar(screen, gameBarHeight)
+    game_bar = GameBar(screen, GAME_BAR_HEIGHT)
     game_bar.rect.topleft = (0, 0)
     bomb_digit1 = Digit(30, 30, 10, 10, 9)
     bomb_digit2 = Digit(30, 30, 40, 10, 9)
@@ -57,28 +65,28 @@ def setup_board(field: MineField) -> tuple:
     mode_indicator.rect.top = 10
 
     boxes = list()
-    for r in range(field.max_row):
-        x = 0
-        for c in range(field.max_col):
-            box = Box(boxSize, (r, c))
-            box.rect.left = x
-            box.rect.top = y
+    y_coord = GAME_BAR_HEIGHT
+    for row in range(field.max_row):
+        x_coord = 0
+        for col in range(field.max_col):
+            box = Box(BOX_SIZE, (row, col))
+            box.rect.left = x_coord
+            box.rect.top = y_coord
             boxes.append(box)
-            x += boxSize
+            x_coord += BOX_SIZE
 
-        y += boxSize
+        y_coord += BOX_SIZE
 
     return screen, background, mouse, game_bar, bomb_counter, timer, play_button, mode_indicator, \
-           boxes, digit_group
+        boxes, digit_group
 
 
-def run_minesweeper(game_mode: Mode = Mode(), client: client = None):
+def run_minesweeper(game_mode: Mode = Mode(), client: Client = None):
+    """Provides the main entrypoint for the game."""
     if client is None:
-        field: MineField = MineField(game_mode.height(),
-                                     game_mode.width(),
-                                     None, game_mode.bomb_count())
+        field = MineField(game_mode.height(), game_mode.width(), None, game_mode.bomb_count())
     else:
-        field: MineField = client.get_mine_field()
+        field: MineField = client.mine_field
 
     fps = 30
 
@@ -224,16 +232,12 @@ def run_minesweeper(game_mode: Mode = Mode(), client: client = None):
                     play_button.happy()
 
         # update groups
-        for spriteGroup in sprites:
-            spriteGroup.clear(screen, background)
-            spriteGroup.update()
-            spriteGroup.draw(screen)
+        for sprite_group in sprites:
+            sprite_group.clear(screen, background)
+            sprite_group.update()
+            sprite_group.draw(screen)
 
         # refresh
         pygame.display.flip()
 
     pygame.quit()
-
-
-if __name__ == "__main__":
-    run_minesweeper()

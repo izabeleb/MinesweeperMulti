@@ -1,5 +1,6 @@
-import pygame
+"""Provides minesweeper utility functions."""
 from typing import List
+import pygame
 from minesweeper import Cell, MineField
 from theme.sprites import Box
 
@@ -37,13 +38,13 @@ def get_open_cells(field: MineField, cell: Cell) -> List[Cell]:
     cell.visited = True
     open_cells.append(cell)
 
-    for c in field.surrounding_cells(cell):
-        open_cells.append(c)
+    for cell in field.surrounding_cells(cell):
+        open_cells.append(cell)
 
-        if c.is_flag or c.visited or not field.cell_is_safe(c):
+        if cell.is_flag or cell.visited or not field.cell_is_safe(cell):
             continue
 
-        open_cells += get_open_cells(field, c)
+        open_cells += get_open_cells(field, cell)
 
     return open_cells
 

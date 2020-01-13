@@ -143,6 +143,7 @@ class Server(asyncio.Protocol):
 
 
 def run_server(host: str, port: int):
+    """Create and run a new game server."""
     loop = asyncio.get_event_loop()
     coro = loop.create_server(Server, host, port)
     server = loop.run_until_complete(coro)

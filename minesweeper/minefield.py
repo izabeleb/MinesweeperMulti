@@ -6,16 +6,14 @@ import struct
 from typing import Generator
 from typing import Tuple
 from minesweeper.cell import Cell
-                                           
+
 
 class BadField(Exception):
     """Raised when a field is corrupted or malformed."""
-    pass
 
 
 class OutOfFieldCell(Exception):
     """Raised when a cell location is outside the range of the field."""
-    pass
 
 
 class MineField:
@@ -45,9 +43,9 @@ class MineField:
             # TODO research more effective bomb distribution ratios
             if mine_count is None:
                 self.mine_count = row * col // 4
-            else:         
+            else:
                 self.mine_count = mine_count
-                
+
             self.flagged_count = 0
             self.mine_field = [
                 [Cell(r, c) for c in range(self.max_col)]
@@ -87,8 +85,8 @@ class MineField:
         Args:
             cell (Cell): the target cell.
         """
-        for c in self.surrounding_cells(cell):
-            c.mine_count += 1
+        for cell in self.surrounding_cells(cell):
+            cell.mine_count += 1
 
     def _decrement_neighbors(self, cell: Cell):
         """Decrement th amount of mines around the target cell by one.
@@ -96,8 +94,8 @@ class MineField:
         Args:
             cell (Cell): the target cell.
         """
-        for c in self.surrounding_cells(cell):
-            c.mine_count -= 1
+        for cell in self.surrounding_cells(cell):
+            cell.mine_count -= 1
 
     def encode(self, encoding: str = 'ascii') -> bytes:
         """Encode a minefield object.
@@ -163,8 +161,8 @@ class MineField:
 
         mines_found: int = 0
 
-        for c in self.surrounding_cells(cell):
-            if c.is_flag:
+        for cell in self.surrounding_cells(cell):
+            if cell.is_flag:
                 mines_found += 1
 
         return cell.mine_count == mines_found
@@ -181,6 +179,15 @@ class MineField:
         return True
 
     def get_cell_at(self, row: int, col: int) -> Cell:
+        """Retrieve the cell at the given row and column.
+
+        Args:
+            row (int): The row of the cell.
+            col (int): The column of the cell.
+
+        Returns:
+            (Cell): The cell at the target location.
+        """
         return self.mine_field[row][col]
 
     def move_mine(self, cell: Cell) -> Tuple[int, int]:

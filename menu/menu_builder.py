@@ -5,9 +5,9 @@ Created on Tue May 21 23:18:46 2019
 @author: bauzy
 Defines menu builder utility functions.
 """
-import pygame
 from typing import List
 from typing import Tuple
+import pygame
 from theme.sprites import Bomb, Button, ColorTheme, InputBox, Label, Mouse
 
 
@@ -54,7 +54,7 @@ def build_simple_menu(title: str, name_label_list: List[List[str]]) -> Tuple:
         v_pos += inc
 
     bombs = list()
-    for i in range(20):
+    for _ in range(20):
         bombs.append(Bomb(screen))
     bomb_group = pygame.sprite.Group(bombs)
 
@@ -84,38 +84,37 @@ def build_simple_menu(title: str, name_label_list: List[List[str]]) -> Tuple:
         button_hovered = pygame.sprite.spritecollide(mouse, button_group, False)
 
         if button_hovered:
-            for buttonItem in button_group.sprites():
-                if buttonItem.name == button_last_hovered:
-                    buttonItem.unhover()
+            for button_item in button_group.sprites():
+                if button_item.name == button_last_hovered:
+                    button_item.unhover()
 
-            for labelItem in label_group.sprites():
-                if labelItem.name == button_last_hovered:
-                    labelItem.unhover()
+            for label_item in label_group.sprites():
+                if label_item.name == button_last_hovered:
+                    label_item.unhover()
         else:
             for button in pygame.sprite.spritecollide(mouse, button_group, False):
                 # a new button is being hovered on
                 if button.name != button_last_hovered:
-                    for buttonItem in button_group.sprites():
-                        if buttonItem.name == button_last_hovered:
-                            buttonItem.unhover()
+                    for button_item in button_group.sprites():
+                        if button_item.name == button_last_hovered:
+                            button_item.unhover()
 
-                    for labelItem in label_group.sprites():
-
-                        if labelItem.name == button_last_hovered:
-                            labelItem.unhover()
+                    for label_item in label_group.sprites():
+                        if label_item.name == button_last_hovered:
+                            label_item.unhover()
 
                 button.hover()
 
                 button_last_hovered = button.name
-                for labelItem in label_group.sprites():
-                    if labelItem.name == button_last_hovered:
-                        labelItem.hover()
+                for label_item in label_group.sprites():
+                    if label_item.name == button_last_hovered:
+                        label_item.hover()
 
         # move the items
-        for spriteGroup in sprites:
-            spriteGroup.clear(screen, background)
-            spriteGroup.update()
-            spriteGroup.draw(screen)
+        for sprite_group in sprites:
+            sprite_group.clear(screen, background)
+            sprite_group.update()
+            sprite_group.draw(screen)
 
         # refresh
         pygame.display.flip()
@@ -173,7 +172,7 @@ def build_input_menu(*fields: str) -> Tuple:
     screen_height = lbl_height + btn_save.height + button_gap
     screen = pygame.display.set_mode((640, screen_height))
 
-    background=pygame.Surface(screen.get_size())
+    background = pygame.Surface(screen.get_size())
     background.fill(ColorTheme.MENU_BG)
     screen.blit(background, (0, 0))
 
@@ -190,9 +189,9 @@ def build_input_menu(*fields: str) -> Tuple:
 
         if keys[pygame.K_BACKSPACE]:
             text_string = text_string[:-1]
-            for inputLabel in input_group.sprites():
-                if inputLabel.name == active_text_box:
-                    inputLabel.render_text(text_string)
+            for input_label in input_group.sprites():
+                if input_label.name == active_text_box:
+                    input_label.render_text(text_string)
 
         # time
         clock.tick(15)
@@ -202,33 +201,33 @@ def build_input_menu(*fields: str) -> Tuple:
             if event.type == pygame.QUIT:
                 keep_going = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                for btnClicked in pygame.sprite.spritecollide(mouse, btn_group, False):
+                for _ in pygame.sprite.spritecollide(mouse, btn_group, False):
                     # save button is clicked
                     keep_going = False
 
                 # textbox is clicked
-                for inputClicked in pygame.sprite.spritecollide(mouse, txt_group, False):
-                    if inputClicked.name != active_text_box:
+                for input_clicked in pygame.sprite.spritecollide(mouse, txt_group, False):
+                    if input_clicked.name != active_text_box:
                         text_string = ""
 
                         # unfocus old textbox
-                        for inputBox in txt_group.sprites():
-                            if inputBox.name == active_text_box:
-                                inputBox.unfocus()
+                        for input_box in txt_group.sprites():
+                            if input_box.name == active_text_box:
+                                input_box.unfocus()
 
-                        for inputBox in input_group.sprites():
-                            if inputBox.name == active_text_box:
-                                inputBox.unfocus()
+                        for input_box in input_group.sprites():
+                            if input_box.name == active_text_box:
+                                input_box.unfocus()
 
                         # focus new textbox
-                        active_text_box = inputClicked.name
-                        for inputBox in txt_group.sprites():
-                            if inputBox.name == active_text_box:
-                                inputBox.focus()
+                        active_text_box = input_clicked.name
+                        for input_box in txt_group.sprites():
+                            if input_box.name == active_text_box:
+                                input_box.focus()
 
-                        for inputBox in input_group.sprites():
-                            if inputBox.name == active_text_box:
-                                inputBox.focus()
+                        for input_box in input_group.sprites():
+                            if input_box.name == active_text_box:
+                                input_box.focus()
             elif event.type == pygame.KEYDOWN:
                 # add other characters needed for hostnames and ports in a better way
                 if (event.key in range(pygame.K_a, pygame.K_z + 1)
@@ -237,9 +236,9 @@ def build_input_menu(*fields: str) -> Tuple:
                         or event.key == pygame.K_MINUS):
                     text_string += event.unicode
 
-                    for inputLabel in input_group.sprites():
-                        if inputLabel.name == active_text_box:
-                            inputLabel.render_text(text_string)
+                    for input_label in input_group.sprites():
+                        if input_label.name == active_text_box:
+                            input_label.render_text(text_string)
 
         btn_hovered = pygame.sprite.spritecollide(mouse, btn_group, False)
 
@@ -251,10 +250,10 @@ def build_input_menu(*fields: str) -> Tuple:
                 item.hover()
 
         # move the items
-        for spriteGroup in sprites:
-            spriteGroup.clear(screen, background)
-            spriteGroup.update()
-            spriteGroup.draw(screen)
+        for sprite_group in sprites:
+            sprite_group.clear(screen, background)
+            sprite_group.update()
+            sprite_group.draw(screen)
 
         # refresh
         pygame.display.flip()

@@ -24,8 +24,7 @@ class Cell:
     def __repr__(self):
         if self.is_mine:
             return '#'
-        else:
-            return repr(self.mine_count)
+        return repr(self.mine_count)
 
     def add_mine(self):
         """Increment the amount of mines surrounding the cell."""

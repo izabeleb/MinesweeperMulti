@@ -6,8 +6,10 @@ Created on Sun May  5 21:05:27 2019
 The main entry point for the game.
 """
 import pygame
-from menu.menus import *
+from menu.menus import initial, settings
+from menu.menu_builder import build_input_menu
 from multiplayer.client import run_client
+from minesweeper import Mode
 from minesweeper.minesweeper import run_minesweeper
 
 pygame.init()
