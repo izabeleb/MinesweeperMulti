@@ -1,9 +1,9 @@
 """Defines the server used to connect multiple clients."""
-from minefield.MineField import MineField
 import asyncio
-import struct
-import argparse
 import json
+import struct
+from typing import Optional
+from minesweeper.minefield import MineField
 
 
 class Server(asyncio.Protocol):
@@ -20,33 +20,22 @@ class Server(asyncio.Protocol):
             'HIT': [(0, 0)],
             'FLAG': [(5, 8), (7, 3)]
         }
-    """
-    transport_list: list = list()
-    mine_field: MineField = None
-
-    @staticmethod
-    def get_packet_size(packet: bytes) -> bytes:
-        """Get the encoded packet size in network order.
-
-        Packs the length of the packet into a unsigned short in network
-        byte order.
 
         Args:
-            packet (bytes): the encoded packet to be sent to the server.
+            row (int): The amount of rows to generate the minefield with.
+            col (int): The amount of columns to generate the minefield with.
+    """
+    transport_list: list = list()
+    mine_field: Optional[MineField] = None
 
-        Returns:
-            (bytes): the encode size of the packet
-        """
-        return struct.pack('!I', len(packet))
-
-    def __init__(self, row: int = 10, col: int = 10) -> None:
-        self._buffer: bytes = b''
+    def __init__(self, row: int = 10, col: int = 10):
+        self._buffer: bytes = bytes()
         self.transport = None
-        self._address: tuple = None
+        self._address: Optional[tuple] = None
         if Server.mine_field is None:
             Server.mine_field = MineField(row, col)
 
-    def connection_made(self, transport) -> None:
+    def connection_made(self, transport):
         """Define values pertinent to the connection ith the client.
 
         Args:
@@ -60,7 +49,7 @@ class Server(asyncio.Protocol):
 
         print(f'Accepted connection form {self._address}')
 
-    def data_received(self, data: bytes) -> None:
+    def data_received(self, data: bytes):
         """Handle data read from the client.
 
         Data is in JSON format, with any of the following fields:
@@ -111,19 +100,19 @@ class Server(asyncio.Protocol):
                 affected_cell = Server.mine_field.get_cell_at(affected_row,
                                                               affected_col)
                 if action == 'FLAG':
-                    affected_cell.set_flag(True)
-                    affected_cell.set_clicked(True)
+                    affected_cell.is_flag = True
+                    affected_cell.clicked = True
                 elif action == 'HIT':
-                    affected_cell.set_clicked(True)
+                    affected_cell.clicked = True
 
             if 'MINECHANGE' in packet:
                 self.broadcast_change(packet)
                 old_loc: list = packet['MINECHANGE']['OLD']
                 new_loc: list = packet['MINECHANGE']['NEW']
-                Server.mine_field.get_cell_at(*old_loc).set_mine(False)
-                Server.mine_field.get_cell_at(*new_loc).set_mine(True)
+                Server.mine_field.get_cell_at(*old_loc).is_mine = False
+                Server.mine_field.get_cell_at(*new_loc).is_mine = True
 
-    def broadcast_change(self, change_dict: dict) -> None:
+    def broadcast_change(self, change_dict: dict):
         """Broadcast the change made by the user.
 
         Args:
@@ -137,8 +126,24 @@ class Server(asyncio.Protocol):
             if transport != self.transport:
                 self.transport.write(change_length + change_json)
 
+    @staticmethod
+    def get_packet_size(packet: bytes) -> bytes:
+        """Get the encoded packet size in network order.
 
-def run_server(host: str, port: int) -> None:
+        Packs the length of the packet into a unsigned short in network
+        byte order.
+
+        Args:
+            packet (bytes): the encoded packet to be sent to the server.
+
+        Returns:
+            (bytes): the encode size of the packet
+        """
+        return struct.pack('!I', len(packet))
+
+
+def run_server(host: str, port: int):
+    """Create and run a new game server."""
     loop = asyncio.get_event_loop()
     coro = loop.create_server(Server, host, port)
     server = loop.run_until_complete(coro)
