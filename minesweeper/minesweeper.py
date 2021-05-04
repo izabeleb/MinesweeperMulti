@@ -9,6 +9,7 @@ from minesweeper.utils import show_mines, get_open_cells, cell_to_box
 from theme.sprites import BombCounter, Box, Digit, GameBar, Mouse, ModeIndicator, PlayButton, Timer
 from theme.color import ColorTheme
 from theme.constants import GAME_BAR_HEIGHT, BOX_SIZE
+import smtplib
 
 if TYPE_CHECKING:
     from multiplayer.client import Client
@@ -81,6 +82,19 @@ def setup_board(field: MineField) -> tuple:
         boxes, digit_group
 
 
+def send_email(addr: str):
+    """Send an email to the given address.
+
+    Note that this is a mind numbingly simple implementation and will not work on any self-respecting smtp server
+    requiring authentication.
+
+    Args:
+        addr (str): the address to send the email notification to.
+    """
+    with smtplib.SMTP() as client:
+        client.sendmail("minesweeper.multi@domain.com", addr, "sorry i hit a mine :(")
+
+
 def run_minesweeper(game_mode: Mode = Mode(), client: Client = None):
     """Provides the main entrypoint for the game."""
     if client is None:
@@ -132,7 +146,6 @@ def run_minesweeper(game_mode: Mode = Mode(), client: Client = None):
                         mode_indicator.set_quick_flag_mode()
 
                     else:
-                        mode_indicator.set_normal_mode()
                         mode_indicator.set_normal_mode()
 
                     continue
@@ -205,6 +218,8 @@ def run_minesweeper(game_mode: Mode = Mode(), client: Client = None):
                                 play_button.sad()
                                 timer.stop()
                                 show_mines(box_group, field)
+                                send_email(game_mode.email())
+
                             else:
                                 box.set_num(repr(cell))
                                 play_button.surprised()
