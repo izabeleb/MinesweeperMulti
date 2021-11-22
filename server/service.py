@@ -55,3 +55,13 @@ class MinesweeperService:
 
         todo: send update events to stream to update all connected clients
         """
+        mine_field = self._store.get_game(request.game_uuid)
+
+        row = request.row
+        col = request.col
+
+        new_state = request.new_state
+
+        _cell = mine_field.cells[row][col].state = new_state
+
+        return PutGameResponse()

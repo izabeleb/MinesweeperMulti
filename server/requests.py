@@ -19,6 +19,7 @@ class GetGameRequest(NamedTuple):
 
 class PutGameStateRequest(NamedTuple):
     """Request to update the state of the board."""
+    game_uuid: UUID
     row: int
     col: int
     new_state: CellState

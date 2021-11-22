@@ -71,3 +71,12 @@ def get_game(game_uuid: str):
 @app.route("/game/<game_uuid>/state", methods=["PUT"])
 def put_game(game_uuid: UUID):
     """Handle PUT requests to update the board state."""
+    body_json = flask.request.json
+
+    if body_json is None:
+        flask.abort(400)
+
+    request = PutGameStateRequest(game_uuid=game_uuid, **body_json)
+    response = minesweeper_service.update_game(request)
+
+    return json.dumps(response, cls=MinesweeperEncoder)
