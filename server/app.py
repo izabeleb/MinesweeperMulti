@@ -13,12 +13,8 @@ from minesweeper.game import MinesweeperGame
 from api.service import MinesweeperService
 from api.requests import *
 
-app = Flask(__name__)
 
-
-minesweeper_service = MinesweeperService()
-
-
+# todo: move these definitions into their respective classes
 class MinesweeperEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, UUID):
@@ -40,49 +36,54 @@ class MinesweeperEncoder(JSONEncoder):
                 "url": f"/game/{obj.id}"
             }
         else:
-            return json.JSONEncoder().default(obj)
+            return super().default(obj)
 
 
-@app.route("/games")
-def get_games():
-    """Handle GET requests for all games."""
-    response = minesweeper_service.get_games()
+# todo: add health check
+def create_app():
+    app = Flask(__name__)
 
-    return json.dumps(response, cls=MinesweeperEncoder)
+    minesweeper_service = MinesweeperService()
 
+    @app.route("/games")
+    def get_games():
+        """Handle GET requests for all games."""
+        response = minesweeper_service.get_games()
 
-@app.route("/games", methods=["POST"])
-def post_game():
-    """Handle POST requests to create a game."""
-    body_json = flask.request.json
+        return json.dumps(response, cls=MinesweeperEncoder)
 
-    if body_json is None:
-        flask.abort(400)
+    @app.route("/games", methods=["POST"])
+    def post_game():
+        """Handle POST requests to create a game."""
+        body_json = flask.request.json
 
-    request = PostGameRequest(**body_json)
-    response = minesweeper_service.create_game(request)
+        if body_json is None:
+            flask.abort(400)
 
-    return json.dumps(response, cls=MinesweeperEncoder)
+        request = PostGameRequest(**body_json)
+        response = minesweeper_service.create_game(request)
 
+        return json.dumps(response, cls=MinesweeperEncoder)
 
-@app.route("/game/<game_id>", methods=["GET"])
-def get_game(game_id: str):
-    """Handle GET requests to retrieve a game."""
-    request = GetGameRequest(UUID(game_id))
-    response = minesweeper_service.get_game(request)
+    @app.route("/game/<game_id>", methods=["GET"])
+    def get_game(game_id: str):
+        """Handle GET requests to retrieve a game."""
+        request = GetGameRequest(UUID(game_id))
+        response = minesweeper_service.get_game(request)
 
-    return json.dumps(response, cls=MinesweeperEncoder)
+        return json.dumps(response, cls=MinesweeperEncoder)
 
+    @app.route("/game/<game_id>/field", methods=["UPDATE"])
+    def put_game(game_id: UUID):
+        """Handle PUT requests to update the board state."""
+        body_json = flask.request.json
 
-@app.route("/game/<game_id>/field", methods=["UPDATE"])
-def put_game(game_id: UUID):
-    """Handle PUT requests to update the board state."""
-    body_json = flask.request.json
+        if body_json is None:
+            flask.abort(400)
 
-    if body_json is None:
-        flask.abort(400)
+        request = UpdateGameFieldRequest(game_id=game_id, **body_json)
+        response = minesweeper_service.update_game(request)
 
-    request = UpdateGameFieldRequest(game_id=game_id, **body_json)
-    response = minesweeper_service.update_game(request)
+        return json.dumps(response, cls=MinesweeperEncoder)
 
-    return json.dumps(response, cls=MinesweeperEncoder)
+    return app

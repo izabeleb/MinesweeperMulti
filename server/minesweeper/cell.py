@@ -21,3 +21,9 @@ class Cell:
     is_mine: bool = field(default=False, init=False)
 
     state: CellState = field(default=CellState.Empty, init=False)
+
+    def get_coordinate(self) -> tuple[int, int]:
+        return self.row, self.col
+
+    def __hash__(self):
+        return self.get_coordinate().__hash__()
