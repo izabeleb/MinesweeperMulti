@@ -1,4 +1,5 @@
 from minesweeper.game import MinesweeperGame
+from api.dao import Page
 
 from typing import NamedTuple
 
@@ -13,12 +14,12 @@ class PostGameResponse(NamedTuple):
         }
 
 
-class GetGamesResponse(NamedTuple):
-    """Response to a field query."""
-    games: list[MinesweeperGame]
+class GetPageResponse(NamedTuple):
+    """Response to a resource page request."""
+    page: Page
 
     def to_json(self):
-        return [game.to_json() for game in self.games]
+        return self.page.to_json()
 
 
 class GetGameResponse(NamedTuple):

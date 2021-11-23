@@ -1,5 +1,5 @@
-from api.responses import PostGameResponse, GetGamesResponse, GetGameResponse, UpdateGameFieldResponse
-from api.requests import PostGameRequest, GetGameRequest, UpdateGameFieldRequest
+from api.responses import PostGameResponse, GetPageResponse, GetGameResponse, UpdateGameFieldResponse
+from api.requests import PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest
 
 from minesweeper.game import MinesweeperGame
 
@@ -12,9 +12,6 @@ class MinesweeperService:
     def __init__(self, store: Optional[MemoryStore]):
         self._store = MemoryStore() if store is None else store
 
-        game = MinesweeperGame(10, 10, 10)
-        self._store.add_game(game)
-
     def create_game(self, request: PostGameRequest) -> PostGameResponse:
         """Creates a new minefield."""
         game = MinesweeperGame(request.height, request.width, request.mine_count)
@@ -24,9 +21,9 @@ class MinesweeperService:
 
         return response
 
-    def get_games(self) -> GetGamesResponse:
+    def get_game_page(self, request: GetPageRequest) -> GetPageResponse:
         """Retrieve a list of all game uuids."""
-        return GetGamesResponse(self._store.get_all_games())
+        return GetPageResponse(self._store.get_page(request.page, request.size))
 
     def get_game(self, request: GetGameRequest) -> GetGameResponse:
         """Retrieve the game with the specified uuid."""

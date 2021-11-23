@@ -12,6 +12,12 @@ class PostGameRequest(NamedTuple):
     mine_count: int = 10
 
 
+class GetPageRequest(NamedTuple):
+    """Request for a page of a certain resource."""
+    page: int
+    size: int
+
+
 class GetGameRequest(NamedTuple):
     """Request for a specific game."""
     game_id: UUID
