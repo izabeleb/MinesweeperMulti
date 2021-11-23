@@ -86,4 +86,8 @@ def create_app():
 
         return json.dumps(response, cls=MinesweeperEncoder)
 
+    @app.route("/health", methods=["GET"])
+    def get_health():
+        return "ok"
+
     return app
