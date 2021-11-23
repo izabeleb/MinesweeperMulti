@@ -6,6 +6,8 @@ from api.service import MemoryStore
 
 from minesweeper.game import MinesweeperGame
 
+from uuid import UUID
+
 
 class TestGetGame(unittest.TestCase):
     def setUp(self):
@@ -52,3 +54,48 @@ class TestGetGame(unittest.TestCase):
         print(response.json["data"])
         print([i.to_json() for i in [self._game_3, self._game_4]])
         self.assertListEqual(response.json["data"], [i.to_json() for i in [self._game_3, self._game_4]])
+
+
+class TestPutGame(unittest.TestCase):
+    def setUp(self):
+        self._store = MemoryStore()
+
+        self._client = app.create_app(self._store).test_client()
+
+    def test_no_body(self):
+        response = self._client.post("/games", data={})
+
+        self.assertEqual(400, response.status_code)
+
+    def test_unrecognized_field(self):
+        response = self._client.post("/games", data={
+            "unrecognized_field": "unrecognized_value"
+        })
+
+        self.assertEqual(400, response.status_code)
+
+    def test_basic_field(self):
+        response = self._client.post("/games", json={
+            "width": 10,
+            "height": 10,
+            "mine_count": 10
+        })
+
+        response_json = response.json
+        game_url = response_json["game_url"]
+        game_id = UUID(game_url.split("/")[-1])
+
+        game = self._store.get_game(game_id)
+
+        self.assertEqual(10, game.minefield.rows)
+        self.assertEqual(10, game.minefield.cols)
+        self.assertEqual(10, game.minefield.mine_count)
+
+    def test_bad_field_dimensions(self):
+        response = self._client.post("/games", json={
+            "width": 10,
+            "height": -1,
+            "mine_count": 10
+        })
+
+        self.assertEqual(400, response.status_code)

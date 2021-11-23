@@ -35,9 +35,12 @@ def create_app(store: Optional[MemoryStore] = None):
             flask.abort(400)
 
         request = PostGameRequest(**body_json)
-        response = minesweeper_service.create_game(request)
 
-        return flask.jsonify(response.to_json())
+        try:
+            response = minesweeper_service.create_game(request)
+            return flask.jsonify(response.to_json())
+        except ValueError:  # todo: make errors types to allow for more specificity
+            flask.abort(400)
 
     @app.route("/game/<game_id>", methods=["GET"])
     def get_game(game_id: str):
