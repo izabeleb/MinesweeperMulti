@@ -1,4 +1,4 @@
-from minesweeper.minefield import MineField
+from minesweeper.game import MinesweeperGame
 
 from typing import NamedTuple
 
@@ -7,19 +7,18 @@ from uuid import UUID
 
 class PostGameResponse(NamedTuple):
     """Response to a crate game request."""
-    game_uuid: UUID
-    mine_field: MineField
+    game_url: str
 
 
-class GetGameIdsResponse(NamedTuple):
+class GetGamesResponse(NamedTuple):
     """Response to a field query."""
-    game_uuids: list[UUID]
+    games: list[MinesweeperGame]
 
 
 class GetGameResponse(NamedTuple):
     """Response to a field access request."""
-    mine_field: MineField
+    game: MinesweeperGame
 
 
-class PutGameResponse(NamedTuple):
+class UpdateGameFieldResponse(NamedTuple):
     """Response to a field state update request."""

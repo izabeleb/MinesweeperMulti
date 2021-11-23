@@ -14,12 +14,12 @@ class PostGameRequest(NamedTuple):
 
 class GetGameRequest(NamedTuple):
     """Request for a specific game."""
-    game_uuid: UUID
+    game_id: UUID
 
 
-class PutGameStateRequest(NamedTuple):
-    """Request to update the state of the board."""
-    game_uuid: UUID
+class UpdateGameFieldRequest(NamedTuple):
+    """Request to update the state of the game field."""
+    game_id: UUID
     row: int
     col: int
     new_state: CellState

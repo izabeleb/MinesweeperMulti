@@ -1,6 +1,8 @@
 import random
 
-from minesweeper.cell import Cell, CellState
+from minesweeper.cell import Cell
+
+import uuid
 
 
 class MineField:
@@ -9,6 +11,7 @@ class MineField:
         self.rows = rows
         self.cols = cols
         self.mine_count = mine_count
+        self.id = uuid.uuid4()
 
         self.cells = [
             [Cell(i, j) for j in range(self.rows)]

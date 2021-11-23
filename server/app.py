@@ -8,9 +8,10 @@ from json import JSONEncoder
 
 from minesweeper.minefield import MineField
 from minesweeper.cell import Cell
+from minesweeper.game import MinesweeperGame
 
-from service import MinesweeperService
-from requests import *
+from api.service import MinesweeperService
+from api.requests import *
 
 app = Flask(__name__)
 
@@ -33,6 +34,11 @@ class MinesweeperEncoder(JSONEncoder):
             }
         elif isinstance(obj, Enum):
             return str(obj)
+        elif isinstance(obj, MinesweeperGame):
+            return {
+                "created_at": obj.created_at.timestamp(),
+                "url": f"/game/{obj.id}"
+            }
         else:
             return json.JSONEncoder().default(obj)
 
@@ -45,7 +51,7 @@ def get_games():
     return json.dumps(response, cls=MinesweeperEncoder)
 
 
-@app.route("/game", methods=["POST"])
+@app.route("/games", methods=["POST"])
 def post_game():
     """Handle POST requests to create a game."""
     body_json = flask.request.json
@@ -59,24 +65,24 @@ def post_game():
     return json.dumps(response, cls=MinesweeperEncoder)
 
 
-@app.route("/game/<game_uuid>", methods=["GET"])
-def get_game(game_uuid: str):
+@app.route("/game/<game_id>", methods=["GET"])
+def get_game(game_id: str):
     """Handle GET requests to retrieve a game."""
-    request = GetGameRequest(UUID(game_uuid))
+    request = GetGameRequest(UUID(game_id))
     response = minesweeper_service.get_game(request)
 
     return json.dumps(response, cls=MinesweeperEncoder)
 
 
-@app.route("/game/<game_uuid>/state", methods=["PUT"])
-def put_game(game_uuid: UUID):
+@app.route("/game/<game_id>/field", methods=["UPDATE"])
+def put_game(game_id: UUID):
     """Handle PUT requests to update the board state."""
     body_json = flask.request.json
 
     if body_json is None:
         flask.abort(400)
 
-    request = PutGameStateRequest(game_uuid=game_uuid, **body_json)
+    request = UpdateGameFieldRequest(game_id=game_id, **body_json)
     response = minesweeper_service.update_game(request)
 
     return json.dumps(response, cls=MinesweeperEncoder)
