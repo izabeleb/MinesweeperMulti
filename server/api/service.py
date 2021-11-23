@@ -5,10 +5,12 @@ from minesweeper.game import MinesweeperGame
 
 from api.dao import MemoryStore
 
+from typing import Optional
+
 
 class MinesweeperService:
-    def __init__(self):
-        self._store = MemoryStore()
+    def __init__(self, store: Optional[MemoryStore]):
+        self._store = MemoryStore() if store is None else store
 
         game = MinesweeperGame(10, 10, 10)
         self._store.add_game(game)

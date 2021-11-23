@@ -1,56 +1,54 @@
-from enum import Enum
+from uuid import UUID
 
 import flask
 from flask import Flask
 
-import json
-from json import JSONEncoder
+from api.service import MemoryStore, MinesweeperService
+from api.requests import PostGameRequest, GetGameRequest, UpdateGameFieldRequest
 
-from minesweeper.minefield import MineField
-from minesweeper.cell import Cell
-from minesweeper.game import MinesweeperGame
-
-from api.service import MinesweeperService
-from api.requests import *
+from typing import Optional
 
 
-# todo: move these definitions into their respective classes
-class MinesweeperEncoder(JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, UUID):
-            return str(obj)
-        elif isinstance(obj, MineField):
-            return obj.cells  # todo: we probably want to change this
-        elif isinstance(obj, Cell):
-            return {
-                "col": obj.col,
-                "row": obj.row,
-                "is_mine": obj.is_mine,
-                "state": obj.state
-            }
-        elif isinstance(obj, Enum):
-            return str(obj)
-        elif isinstance(obj, MinesweeperGame):
-            return {
-                "created_at": obj.created_at.timestamp(),
-                "url": f"/game/{obj.id}"
-            }
-        else:
-            return super().default(obj)
+# # todo: move these definitions into their respective classes
+# # todo: keeps returning lists
+# class MinesweeperEncoder(JSONEncoder):
+#     def default(self, obj):
+#         if isinstance(obj, GetGameResponse):
+#             return obj.to_json()
+#         if isinstance(obj, UUID):
+#             return str(obj)
+#         elif isinstance(obj, MineField):
+#             return obj.cells  # todo: we probably want to change this
+#         elif isinstance(obj, Cell):
+#             return {
+#                 "col": obj.col,
+#                 "row": obj.row,
+#                 "is_mine": obj.is_mine,
+#                 "state": obj.state
+#             }
+#         elif isinstance(obj, Enum):
+#             return str(obj)
+#         elif isinstance(obj, MinesweeperGame):
+#             return {
+#                 "created_at": obj.created_at.timestamp(),
+#                 "url": f"/game/{obj.id}"
+#             }
+#         else:
+#             return super().default(obj)
 
 
 # todo: add health check
-def create_app():
+def create_app(store: Optional[MemoryStore] = None):
     app = Flask(__name__)
 
-    minesweeper_service = MinesweeperService()
+    minesweeper_service = MinesweeperService(store)
 
-    @app.route("/games")
+    @app.route("/games", methods=["GET"])
     def get_games():
         """Handle GET requests for all games."""
         response = minesweeper_service.get_games()
 
-        return json.dumps(response, cls=MinesweeperEncoder)
+        return flask.jsonify(response)
 
     @app.route("/games", methods=["POST"])
     def post_game():
@@ -63,7 +61,7 @@ def create_app():
         request = PostGameRequest(**body_json)
         response = minesweeper_service.create_game(request)
 
-        return json.dumps(response, cls=MinesweeperEncoder)
+        return flask.jsonify(response)
 
     @app.route("/game/<game_id>", methods=["GET"])
     def get_game(game_id: str):
@@ -71,7 +69,7 @@ def create_app():
         request = GetGameRequest(UUID(game_id))
         response = minesweeper_service.get_game(request)
 
-        return json.dumps(response, cls=MinesweeperEncoder)
+        return flask.jsonify(response.to_json())
 
     @app.route("/game/<game_id>/field", methods=["UPDATE"])
     def put_game(game_id: UUID):
@@ -84,7 +82,7 @@ def create_app():
         request = UpdateGameFieldRequest(game_id=game_id, **body_json)
         response = minesweeper_service.update_game(request)
 
-        return json.dumps(response, cls=MinesweeperEncoder)
+        return flask.jsonify(response)
 
     @app.route("/health", methods=["GET"])
     def get_health():

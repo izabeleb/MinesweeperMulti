@@ -22,8 +22,16 @@ class Cell:
 
     state: CellState = field(default=CellState.Empty, init=False)
 
+    def __hash__(self):
+        return self.get_coordinate().__hash__()
+
     def get_coordinate(self) -> tuple[int, int]:
         return self.row, self.col
 
-    def __hash__(self):
-        return self.get_coordinate().__hash__()
+    def to_json(self):
+        return {
+            "col": self.col,
+            "row": self.row,
+            "is_mine": self.is_mine,
+            "state": self.state
+        }

@@ -85,3 +85,8 @@ class MineField:
             visited_cells.add(cell)
 
         return safe_coordinates
+
+    def to_json(self):
+        return {
+            "cells": [[cell.to_json() for cell in row] for row in self.cells]
+        }
