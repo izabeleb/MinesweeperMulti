@@ -31,13 +31,8 @@ class MineField:
             row = random.randrange(self.rows)
             col = random.randrange(self.cols)
 
-            cell = self.cells[row][col]
-
-            if not cell.is_mine:
-                self.cells[row][col].is_mine = True
-
-                for cell in self._get_adjacent_cells(row, col):
-                    cell.adjacent_mines += 1
+            if not self.cells[row][col].is_mine:
+                self.set_mine(row, col)
 
                 mine_count += 1
 
@@ -85,6 +80,13 @@ class MineField:
             visited_cells.add(cell)
 
         return safe_coordinates
+
+    def set_mine(self, row: int, col: int):
+        if not self.cells[row][col].is_mine:
+            self.cells[row][col].is_mine = True
+
+            for cell in self._get_adjacent_cells(row, col):
+                cell.adjacent_mines += 1
 
     def to_json(self):
         return {

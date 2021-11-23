@@ -3,6 +3,7 @@ import itertools
 import unittest
 
 from minesweeper.minefield import MineField
+from minesweeper.cell import Cell
 
 
 class TestMinefieldInit(unittest.TestCase):
@@ -17,10 +18,14 @@ class TestMinefieldInit(unittest.TestCase):
 
         return mine_count
 
+    def _assert_cell(self, cell: Cell, is_mine: bool, adjacent_mines: int):
+        self.assertEqual(is_mine, cell.is_mine)
+        self.assertEqual(adjacent_mines, cell.adjacent_mines)
+
     def test_correct_initialization(self):
         rows = 10
         cols = 10
-        mine_count = 25
+        mine_count = 10
 
         mine_field = MineField(rows=rows, cols=cols, mine_count=mine_count)
 
@@ -54,6 +59,45 @@ class TestMinefieldInit(unittest.TestCase):
         mine_count = 5  # arbitrary value
 
         self.assertRaises(ValueError, MineField, rows=rows, cols=cols, mine_count=mine_count)
+
+    def test_correct_numbers(self):
+        #     0 1 2 3
+        #   ┌─────────┐
+        # 0 │ 1 * 1 0 │
+        # 1 │ 1 2 2 1 │
+        # 2 │ 1 2 * 1 │
+        # 3 │ * 2 1 1 │
+        #   └─────────┘
+
+        rows = 4
+        cols = 4
+        mine_count = 0
+
+        mine_field = MineField(rows=rows, cols=cols, mine_count=mine_count)
+
+        mine_field.set_mine(0, 1)
+        mine_field.set_mine(2, 2)
+        mine_field.set_mine(3, 0)
+
+        self._assert_cell(mine_field.cells[0][0], False, 1)
+        self._assert_cell(mine_field.cells[0][1], True, 0)
+        self._assert_cell(mine_field.cells[0][2], False, 1)
+        self._assert_cell(mine_field.cells[0][3], False, 0)
+
+        self._assert_cell(mine_field.cells[1][0], False, 1)
+        self._assert_cell(mine_field.cells[1][1], False, 2)
+        self._assert_cell(mine_field.cells[1][2], False, 2)
+        self._assert_cell(mine_field.cells[1][3], False, 1)
+
+        self._assert_cell(mine_field.cells[2][0], False, 1)
+        self._assert_cell(mine_field.cells[2][1], False, 2)
+        self._assert_cell(mine_field.cells[2][2], True, 0)
+        self._assert_cell(mine_field.cells[2][3], False, 1)
+
+        self._assert_cell(mine_field.cells[3][0], True, 0)
+        self._assert_cell(mine_field.cells[3][1], False, 2)
+        self._assert_cell(mine_field.cells[3][2], False, 1)
+        self._assert_cell(mine_field.cells[3][3], False, 1)
 
 
 class TestMineField(unittest.TestCase):
