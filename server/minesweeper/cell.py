@@ -4,7 +4,6 @@ import enum
 from enum import Enum
 
 
-# todo: hit -> open -> safe && empty -> close -> unknown ?
 @enum.unique
 class CellState(str, Enum):
     Flag = "flag"

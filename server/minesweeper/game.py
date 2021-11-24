@@ -31,7 +31,6 @@ class GameEvent:
     event: Any
 
 
-# todo: add events
 @dataclass
 class MinesweeperGame:
     height: int

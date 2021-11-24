@@ -45,10 +45,7 @@ class MinesweeperService:
         return response
 
     def update_game(self, request: UpdateGameFieldRequest) -> Optional[UpdateGameFieldResponse]:
-        """Update the board state.
-
-        todo: send update events to stream to update all connected clients
-        """
+        """Update the board state."""
         response = self.get_game(GetGameRequest(request.id))
 
         if response is None:
