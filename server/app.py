@@ -10,6 +10,21 @@ from minesweeper.cell import CellChange
 
 from typing import Optional
 
+from json import JSONEncoder
+from typing import Any
+
+from minesweeper.game import MinesweeperGame
+
+
+class Encoder(JSONEncoder):
+    def default(self, obj: Any):
+        if isinstance(obj, MinesweeperGame):
+            return {
+                "created_at": obj.created_at.timestamp(),
+
+            }
+        return super().default(obj)
+
 
 # todo: add health check
 def create_app(store: Optional[MemoryStore] = None):
@@ -26,7 +41,7 @@ def create_app(store: Optional[MemoryStore] = None):
         request = GetPageRequest(page, size)
         response = minesweeper_service.get_game_page(request)
 
-        return flask.jsonify(response.to_json())
+        return flask.jsonify(response)
 
     @app.route("/games", methods=["POST"])
     def post_game():
@@ -40,7 +55,7 @@ def create_app(store: Optional[MemoryStore] = None):
 
         try:
             response = minesweeper_service.create_game(request)
-            return flask.jsonify(response.to_json())
+            return flask.jsonify(response)
         except ValueError:  # todo: make errors types to allow for more specificity
             flask.abort(400)
 
@@ -53,7 +68,7 @@ def create_app(store: Optional[MemoryStore] = None):
         if response is None:
             flask.abort(404)
 
-        return flask.jsonify(response.to_json())
+        return flask.jsonify(response)
 
     @app.route("/game/<game_id>/field", methods=["PATCH"])
     def patch_game(game_id: str):
@@ -69,7 +84,7 @@ def create_app(store: Optional[MemoryStore] = None):
         if response is None:
             flask.abort(404)
 
-        return flask.jsonify(response.to_json())
+        return flask.jsonify(response)
 
     @app.route("/health", methods=["GET"])
     def get_health():

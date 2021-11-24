@@ -1,3 +1,6 @@
+import dataclasses
+from dataclasses import dataclass, field
+
 import datetime
 
 import uuid
@@ -6,15 +9,16 @@ from minesweeper.minefield import MineField
 
 
 # todo: add events
+@dataclass
 class MinesweeperGame:
-    def __init__(self, height: int, width: int, mine_count: int):
-        self.created_at = datetime.datetime.now()
-        self.id = uuid.uuid4()
+    height: int
+    width: int
+    mine_count: int
 
-        self.minefield = MineField(height, width, mine_count)
+    created_at: datetime.datetime = field(default_factory=datetime.datetime.now, init=False)
+    id: datetime.datetime = field(default_factory=uuid.uuid4, init=False)
 
-    def to_json(self):
-        return {
-            "created_at": self.created_at.timestamp(),
-            "url": f"/game/{self.id}"
-        }
+    def __post_init__(self):
+        # since self.minefield is not initialized as a dataclass Field it will
+        # not be included in the serialized json for this class
+        self.minefield = MineField(self.height, self.width, self.mine_count)
