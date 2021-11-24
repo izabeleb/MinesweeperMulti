@@ -19,7 +19,7 @@ class MinesweeperService:
         game = MinesweeperGame(request.height, request.width, request.mine_count)
 
         self._store.add_game(game)
-        response = PostGameResponse(f"/game/{game.id}")  # todo: add url resolver
+        response = PostGameResponse(game.id)
 
         game.events.append(GameEvent(EventType.GameStart, {}))
 

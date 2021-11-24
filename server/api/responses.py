@@ -5,11 +5,13 @@ from dataclasses import dataclass
 
 from api.dao import Page
 
+from uuid import UUID
+
 
 @dataclass(frozen=True)
 class PostGameResponse:
     """Response to a crate game request."""
-    game_url: str
+    id: UUID
 
 
 @dataclass(frozen=True)

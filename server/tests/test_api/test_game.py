@@ -32,11 +32,11 @@ class TestGetGame(BaseWrapper.BaseGameTest):
     def setUp(self):
         super().setUp()
 
-        self._game_0 = MinesweeperGame(4, 4, 4)
-        self._game_1 = MinesweeperGame(4, 4, 4)
-        self._game_2 = MinesweeperGame(4, 4, 4)
-        self._game_3 = MinesweeperGame(4, 4, 4)
-        self._game_4 = MinesweeperGame(4, 4, 4)
+        self._game_0 = MinesweeperGame(4, 4, 0)
+        self._game_1 = MinesweeperGame(4, 4, 0)
+        self._game_2 = MinesweeperGame(4, 4, 0)
+        self._game_3 = MinesweeperGame(4, 4, 0)
+        self._game_4 = MinesweeperGame(4, 4, 0)
 
         self._sorted_games = sorted([
             self._game_0,
@@ -102,24 +102,26 @@ class TestPostGame(BaseWrapper.BaseGameTest):
         response = self._client.post("/games", json={
             "width": 10,
             "height": 10,
-            "mine_count": 10
+            "mine_count": 0
         })
 
         response_json = response.json
-        game_url = response_json["game_url"]
-        game_id = UUID(game_url.split("/")[-1])
+        game_id = UUID(response_json["id"])
 
         game = self._store.get_game(game_id)
 
+        if game is None:
+            self.fail("game should not be None")
+
         self.assertEqual(10, game.minefield.rows)
         self.assertEqual(10, game.minefield.cols)
-        self.assertEqual(10, game.minefield.mine_count)
+        self.assertEqual(0, game.minefield.mine_count)
 
     def test_bad_field_dimensions(self):
         response = self._client.post("/games", json={
             "width": 10,
             "height": -1,
-            "mine_count": 10
+            "mine_count": 0
         })
 
         self.assertEqual(400, response.status_code)
@@ -131,8 +133,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
 
         response = self._service.create_game(PostGameRequest(4, 4, 0))
 
-        self._game_url = response.game_url
-        self._game_id = UUID(self._game_url.split("/")[-1])
+        self._game_id = response.id
         self._game = self._store.get_game(self._game_id)
         self._minefield = self._game.minefield
 

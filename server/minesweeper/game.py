@@ -6,6 +6,7 @@ from enum import Enum
 import datetime
 
 import uuid
+from uuid import UUID
 
 from minesweeper.minefield import MineField
 
@@ -39,7 +40,7 @@ class MinesweeperGame:
 
     created_at: datetime.datetime = field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc),
                                           init=False)
-    id: datetime.datetime = field(default_factory=uuid.uuid4, init=False)
+    id: UUID = field(default_factory=uuid.uuid4, init=False)
 
     def __post_init__(self):
         # since self.minefield is not initialized as a dataclass Field it will
