@@ -1,26 +1,37 @@
 import itertools
 
-from flask.json import JSONEncoder
-
 import app
 
 import unittest
 
-from api.service import MemoryStore
+from api.service import MinesweeperService, MemoryStore
+from api.requests import *
 
-from minesweeper.game import MinesweeperGame
+from minesweeper.game import MinesweeperGame, GameEvent, EventType
 from minesweeper.cell import CellState
 
 import uuid
 from uuid import UUID
 
-import werkzeug.http
-
 import json
 
 
-class TestGetGame(unittest.TestCase):
+def _to_json_dict(obj):
+    return json.loads(json.dumps(obj, cls=app.MinesweeperEncoder))
+
+
+class BaseWrapper:
+    class BaseGameTest(unittest.TestCase):
+        def setUp(self):
+            self._store = MemoryStore()
+            self._client = app.create_app(self._store).test_client()
+            self._service = MinesweeperService(self._store)
+
+
+class TestGetGame(BaseWrapper.BaseGameTest):
     def setUp(self):
+        super().setUp()
+
         self._game_0 = MinesweeperGame(4, 4, 4)
         self._game_1 = MinesweeperGame(4, 4, 4)
         self._game_2 = MinesweeperGame(4, 4, 4)
@@ -36,14 +47,11 @@ class TestGetGame(unittest.TestCase):
         ],
             key=lambda game: game.created_at)
 
-        self._store = MemoryStore()
         self._store.add_game(self._game_0)
         self._store.add_game(self._game_1)
         self._store.add_game(self._game_2)
         self._store.add_game(self._game_3)
         self._store.add_game(self._game_4)
-
-        self._client = app.create_app(self._store).test_client()
 
     def test_get_game(self):
         response = self._client.get(f"/game/{self._game_0.id}")
@@ -51,7 +59,7 @@ class TestGetGame(unittest.TestCase):
         actual = response.json
         expected = {
             'game': {
-                'created_at': werkzeug.http.http_date(self._game_0.created_at),
+                'created_at': self._game_0.created_at.timestamp(),
                 'id': str(self._game_0.id),
                 'width': self._game_0.width,
                 'height': self._game_0.height,
@@ -69,20 +77,15 @@ class TestGetGame(unittest.TestCase):
     def test_get_page_size_3(self):
         response = self._client.get(f"/games?page=1&size=3")
 
-        self.assertListEqual(json.loads(json.dumps([self._game_0, self._game_1, self._game_2], cls=JSONEncoder)),
+        self.assertListEqual(_to_json_dict([self._game_0, self._game_1, self._game_2]),
                              response.json["page"]["data"])
 
         response = self._client.get(f"/games?page=2&size=3")
-        self.assertListEqual(json.loads(json.dumps([self._game_3, self._game_4], cls=JSONEncoder)),
+        self.assertListEqual(_to_json_dict([self._game_3, self._game_4]),
                              response.json["page"]["data"])
 
 
-class TestPutGame(unittest.TestCase):
-    def setUp(self):
-        self._store = MemoryStore()
-
-        self._client = app.create_app(self._store).test_client()
-
+class TestPostGame(BaseWrapper.BaseGameTest):
     def test_no_body(self):
         response = self._client.post("/games", data={})
 
@@ -122,21 +125,13 @@ class TestPutGame(unittest.TestCase):
         self.assertEqual(400, response.status_code)
 
 
-class TestUpdateGame(unittest.TestCase):
+class TestUpdateGame(BaseWrapper.BaseGameTest):
     def setUp(self):
-        self._store = MemoryStore()
+        super().setUp()
 
-        self._client = app.create_app(self._store).test_client()
+        response = self._service.create_game(PostGameRequest(4, 4, 0))
 
-        response = self._client.post("/games", json={
-            "width": 4,
-            "height": 4,
-            "mine_count": 0
-        })
-
-        response_json = response.json
-
-        self._game_url = response_json["game_url"]
+        self._game_url = response.game_url
         self._game_id = UUID(self._game_url.split("/")[-1])
         self._game = self._store.get_game(self._game_id)
         self._minefield = self._game.minefield
@@ -267,3 +262,68 @@ class TestUpdateGame(unittest.TestCase):
 
         self.assertDictEqual({"is_mine_hit": False, "cell_changes": [{"col": 0, "row": 0, "state": "flag"}]},
                              response.json)
+
+
+class TestGameEvents(BaseWrapper.BaseGameTest):
+    def setUp(self):
+        super().setUp()
+
+        self._game = MinesweeperGame(4, 4, 0)
+        self._events = self._game.events
+
+        self._store.add_game(self._game)
+
+        self._events.append(GameEvent(EventType.GameStart, {}))
+        self._events.append(GameEvent(EventType.CellChange, CellChange(0, 0, CellState.Open)))
+        self._events.append(GameEvent(EventType.GameEnd, {}))
+
+        self._start_time = self._events[0].occurred_at
+        self._middle_time = self._events[len(self._events) // 2].occurred_at
+        self._end_time = self._events[-1].occurred_at
+
+    def test_events_non_existent_game(self):
+        response = self._client.get(f"/game/{uuid.uuid4()}/events")
+
+        self.assertEqual(404, response.status_code)
+
+    def test_events_no_since(self):
+        response = self._client.get(f"/game/{self._game.id}/events")
+
+        actual = response.json["events"]
+        expected = _to_json_dict(self._events)
+
+        self.assertListEqual(expected, actual)
+
+    def test_events_since_start(self):
+        response = self._client.get(f"/game/{self._game.id}/events", json={
+            "since": self._start_time.timestamp()
+        })
+
+        actual = response.json["events"]
+        expected = _to_json_dict(self._events)
+
+        self.assertListEqual(expected, actual)
+
+    def test_events_since_middle(self):
+        response = self._client.get(f"/game/{self._game.id}/events", json={
+            "since": self._middle_time.timestamp()
+        })
+
+        actual = response.json["events"]
+        expected = _to_json_dict(self._events[len(self._events) // 2:])
+
+        self.assertListEqual(expected, actual)
+
+    def test_events_since_end(self):
+        response = self._client.get(f"/game/{self._game.id}/events", json={
+            "since": self._end_time.timestamp()
+        })
+
+        actual = response.json["events"]
+        expected = _to_json_dict(self._events[-1:])
+
+        self.assertListEqual(expected, actual)
+
+
+if __name__ == '__main__':
+    unittest.main()
