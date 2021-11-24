@@ -17,7 +17,6 @@ class MineField:
         self.rows = rows
         self.cols = cols
         self.mine_count = mine_count
-        self.id = uuid.uuid4()
 
         self.cells = [
             [Cell(i, j) for j in range(self.rows)]

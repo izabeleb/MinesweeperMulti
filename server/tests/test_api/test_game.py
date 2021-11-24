@@ -326,5 +326,9 @@ class TestGameEvents(BaseWrapper.BaseGameTest):
         self.assertListEqual(expected, actual)
 
 
+class TestGameField(BaseWrapper.BaseGameTest):
+    pass
+
+
 if __name__ == '__main__':
     unittest.main()

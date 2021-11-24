@@ -1,5 +1,5 @@
 from minesweeper.game import GameEvent, MinesweeperGame
-from minesweeper.cell import CellChange
+from minesweeper.cell import CellChange, Cell
 
 from dataclasses import dataclass
 
@@ -35,4 +35,11 @@ class UpdateGameFieldResponse:
 
 @dataclass(frozen=True)
 class GetGameEventsResponse:
+    """A to a game events access request."""
     events: list[GameEvent]
+
+
+@dataclass(frozen=True)
+class GetGameFieldResponse:
+    """A response to a game field access request."""
+    cells: list[list[Cell]]
