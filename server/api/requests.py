@@ -1,8 +1,12 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+import datetime
 
 from uuid import UUID
 
 from minesweeper.cell import CellChange
+
+from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -23,11 +27,18 @@ class GetPageRequest:
 @dataclass(frozen=True)
 class GetGameRequest:
     """Request for a specific game."""
-    game_id: UUID
+    id: UUID
 
 
 @dataclass(frozen=True)
 class UpdateGameFieldRequest:
     """Request to update the state of the game field."""
-    game_id: UUID
+    id: UUID
     cell_change: CellChange
+
+
+@dataclass(frozen=True)
+class GetGameEventsRequest:
+    """Request for a game's events."""
+    id: UUID
+    since: Optional[datetime.datetime] = field(default=None)

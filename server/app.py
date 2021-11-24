@@ -4,31 +4,27 @@ import flask
 from flask import Flask
 
 from api.service import MemoryStore, MinesweeperService
-from api.requests import PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest
+from api.requests import PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest, GetGameEventsRequest
 
 from minesweeper.cell import CellChange
 
-from typing import Optional
+from typing import Optional, Any
 
-from json import JSONEncoder
-from typing import Any
-
-from minesweeper.game import MinesweeperGame
+import datetime
 
 
-class Encoder(JSONEncoder):
+class MinesweeperEncoder(flask.json.JSONEncoder):
     def default(self, obj: Any):
-        if isinstance(obj, MinesweeperGame):
-            return {
-                "created_at": obj.created_at.timestamp(),
+        if isinstance(obj, datetime.datetime):
+            return obj.timestamp()
 
-            }
         return super().default(obj)
 
 
-# todo: add health check
 def create_app(store: Optional[MemoryStore] = None):
     app = Flask(__name__)
+
+    app.json_encoder = MinesweeperEncoder
 
     minesweeper_service = MinesweeperService(store)
 
@@ -78,8 +74,24 @@ def create_app(store: Optional[MemoryStore] = None):
         if body_json is None:
             flask.abort(400)
 
-        request = UpdateGameFieldRequest(game_id=UUID(game_id), cell_change=CellChange(**body_json["cell_change"]))
+        request = UpdateGameFieldRequest(id=UUID(game_id), cell_change=CellChange(**body_json["cell_change"]))
         response = minesweeper_service.update_game(request)
+
+        if response is None:
+            flask.abort(404)
+
+        return flask.jsonify(response)
+
+    @app.route("/game/<game_id>/events")
+    def get_events(game_id: str):
+        body_json = flask.request.json
+
+        if body_json is not None and "since" in body_json:
+            request = GetGameEventsRequest(UUID(game_id), datetime.datetime.fromtimestamp(body_json["since"]))
+        else:
+            request = GetGameEventsRequest(UUID(game_id))
+
+        response = minesweeper_service.get_game_events(request)
 
         if response is None:
             flask.abort(404)

@@ -1,4 +1,4 @@
-from minesweeper.game import MinesweeperGame
+from minesweeper.game import GameEvent, MinesweeperGame
 from minesweeper.cell import CellChange
 
 from dataclasses import dataclass
@@ -32,5 +32,5 @@ class UpdateGameFieldResponse:
 
 
 @dataclass(frozen=True)
-class GetEventsResponse:
-    pass
+class GetGameEventsResponse:
+    events: list[GameEvent]

@@ -11,9 +11,6 @@ class CellState(str, Enum):
     Open = "opened"
     Closed = "closed"
 
-    def to_json(self):
-        return self
-
 
 @dataclass
 class CellChange:
@@ -38,11 +35,3 @@ class Cell:
 
     def get_coordinate(self) -> tuple[int, int]:
         return self.row, self.col
-
-    def to_json(self):
-        return {
-            "col": self.col,
-            "row": self.row,
-            "is_mine": self.is_mine,
-            "state": self.state
-        }

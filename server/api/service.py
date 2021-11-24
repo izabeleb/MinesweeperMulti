@@ -1,7 +1,8 @@
-from api.responses import PostGameResponse, GetPageResponse, GetGameResponse, UpdateGameFieldResponse
-from api.requests import PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest
+from api.responses import (PostGameResponse, GetPageResponse, GetGameResponse, UpdateGameFieldResponse,\
+                           GetGameEventsResponse)
+from api.requests import PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest, GetGameEventsRequest
 
-from minesweeper.game import MinesweeperGame
+from minesweeper.game import MinesweeperGame, EventType, GameEvent
 from minesweeper.cell import CellState, CellChange
 
 from api.dao import MemoryStore
@@ -20,6 +21,8 @@ class MinesweeperService:
         self._store.add_game(game)
         response = PostGameResponse(f"/game/{game.id}")  # todo: add url resolver
 
+        game.events.append(GameEvent(EventType.GameStart, {}))
+
         return response
 
     def get_game_page(self, request: GetPageRequest) -> GetPageResponse:
@@ -28,7 +31,7 @@ class MinesweeperService:
 
     def get_game(self, request: GetGameRequest) -> Optional[GetGameResponse]:
         """Retrieve the game with the specified uuid."""
-        game = self._store.get_game(request.game_id)
+        game = self._store.get_game(request.id)
 
         if game is None:
             return None
@@ -42,7 +45,7 @@ class MinesweeperService:
 
         todo: send update events to stream to update all connected clients
         """
-        response = self.get_game(GetGameRequest(request.game_id))
+        response = self.get_game(GetGameRequest(request.id))
 
         if response is None:
             return None
@@ -82,4 +85,26 @@ class MinesweeperService:
         else:
             raise ValueError(f"unsupported cell state '{cell_change.state}'")
 
+        for change in cell_changes:
+            game.events.append(GameEvent(EventType.CellChange, change))
+
+        if is_mine_hit:
+            game.events.append(GameEvent(EventType.GameEnd, {}))
+
         return UpdateGameFieldResponse(is_mine_hit, cell_changes)
+
+    def get_game_events(self, request: GetGameEventsRequest) -> Optional[GetGameEventsResponse]:
+        response = self.get_game(GetGameRequest(request.id))
+
+        if response is None:
+            return None
+
+        game = response.game
+        since = request.since
+
+        if since is not None:
+            events = list(filter(lambda event: event.occurred_at.timestamp() >= since.timestamp(), game.events))
+        else:
+            events = game.events
+
+        return GetGameEventsResponse(events)

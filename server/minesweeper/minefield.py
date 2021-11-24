@@ -6,6 +6,7 @@ import uuid
 
 
 # todo: implement some kind of resource lock to prevent race conditions
+# todo: expose minefield to flask api
 class MineField:
     def __init__(self, rows: int, cols: int, mine_count: int):
         """Representation of a minesweeper field."""
@@ -88,8 +89,3 @@ class MineField:
 
             for cell in self._get_adjacent_cells(row, col):
                 cell.adjacent_mines += 1
-
-    def to_json(self):
-        return {
-            "cells": [[cell.to_json() for cell in row] for row in self.cells]
-        }
