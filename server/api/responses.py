@@ -30,7 +30,6 @@ class GetGameResponse:
 class UpdateGameFieldResponse:
     """Response to a field state update request."""
     is_mine_hit: bool
-    cell_changes: list[CellChange]
 
 
 @dataclass(frozen=True)

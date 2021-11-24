@@ -1,5 +1,3 @@
-import itertools
-
 import app
 
 import unittest
@@ -148,7 +146,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
 
         self.assertEqual(404, response.status_code)
 
-    def test_hit_empty(self):
+    def test_open_empty(self):
         response = self._client.patch(f"/game/{self._game_id}/field", json={
             "cell_change": {
                 "row": 0,
@@ -157,20 +155,16 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             }
         })
 
-        expected = sorted(list(itertools.chain(*[
-            [{"col": j, "row": i, "state": "opened"} for j in range(self._minefield.cols)]
-            for i in range(self._minefield.rows)
-        ])), key=lambda i: (i["row"], i["col"]))
-        actual = sorted(response.json["cell_changes"], key=lambda i: (i["row"], i["col"]))
+        is_mine_hit = response.json["is_mine_hit"]
 
-        self.assertListEqual(expected, actual)
+        self.assertFalse(is_mine_hit)
 
         for row in self._minefield.cells:
             for cell in row:
                 if cell.state != CellState.Open:
-                    self.fail("all cells should be hit")
+                    self.fail("all cells should be open")
 
-    def test_hit_mine(self):
+    def test_open_mine(self):
         self._minefield.cells[0][0].is_mine = True
 
         response = self._client.patch(f"/game/{self._game_id}/field", json={
@@ -183,6 +177,13 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
 
         self.assertTrue(response.json["is_mine_hit"])
 
+        response = self._service.get_game_events(GetGameEventsRequest(self._game_id))
+
+        actual = [event.event_type for event in response.events]
+        expected = [EventType.GameStart, EventType.CellChange, EventType.GameEnd]
+
+        self.assertListEqual(expected, actual)
+
     def test_update_flagged_cell(self):
         self._minefield.cells[0][0].state = CellState.Flag
 
@@ -194,7 +195,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             }
         })
 
-        self.assertDictEqual({"is_mine_hit": False, "cell_changes": []}, response.json)
+        self.assertDictEqual({"is_mine_hit": False}, response.json)
 
         response = self._client.patch(f"/game/{self._game_id}/field", json={
             "cell_change": {
@@ -204,7 +205,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             }
         })
 
-        self.assertDictEqual({"is_mine_hit": False, "cell_changes": []}, response.json)
+        self.assertDictEqual({"is_mine_hit": False}, response.json)
 
         response = self._client.patch(f"/game/{self._game_id}/field", json={
             "cell_change": {
@@ -214,8 +215,14 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             }
         })
 
-        self.assertDictEqual({"is_mine_hit": False, "cell_changes": [{"row": 0, "col": 0, "state": "closed"}]},
-                             response.json)
+        self.assertDictEqual({"is_mine_hit": False}, response.json)
+
+        response = self._service.get_game_events(GetGameEventsRequest(self._game_id))
+
+        actual = [event.event_type for event in response.events]
+        expected = [EventType.GameStart, EventType.CellChange]
+
+        self.assertListEqual(expected, actual)
 
     def test_update_open_cell(self):
         self._minefield.cells[0][0].state = CellState.Open
@@ -228,7 +235,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             }
         })
 
-        self.assertDictEqual({"is_mine_hit": False, "cell_changes": []}, response.json)
+        self.assertDictEqual({"is_mine_hit": False}, response.json)
 
         response = self._client.patch(f"/game/{self._game_id}/field", json={
             "cell_change": {
@@ -238,7 +245,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             }
         })
 
-        self.assertDictEqual({"is_mine_hit": False, "cell_changes": []}, response.json)
+        self.assertDictEqual({"is_mine_hit": False}, response.json)
 
         response = self._client.patch(f"/game/{self._game_id}/field", json={
             "cell_change": {
@@ -248,7 +255,14 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             }
         })
 
-        self.assertDictEqual({"is_mine_hit": False, "cell_changes": []}, response.json)
+        self.assertDictEqual({"is_mine_hit": False}, response.json)
+
+        response = self._service.get_game_events(GetGameEventsRequest(self._game_id))
+
+        actual = [event.event_type for event in response.events]
+        expected = [EventType.GameStart]
+
+        self.assertListEqual(expected, actual)
 
     def test_update_closed_cell(self):
         # see testUpdateGame.test_hist_empty for changing the state of a closed
@@ -261,8 +275,14 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             }
         })
 
-        self.assertDictEqual({"is_mine_hit": False, "cell_changes": [{"col": 0, "row": 0, "state": "flag"}]},
-                             response.json)
+        self.assertDictEqual({"is_mine_hit": False}, response.json)
+
+        response = self._service.get_game_events(GetGameEventsRequest(self._game_id))
+
+        actual = [event.event_type for event in response.events]
+        expected = [EventType.GameStart, EventType.CellChange]
+
+        self.assertListEqual(expected, actual)
 
 
 class TestGameEvents(BaseWrapper.BaseGameTest):

@@ -1,6 +1,6 @@
 import random
 
-from minesweeper.cell import Cell
+from minesweeper.cell import Cell, CellState
 
 
 # todo: implement some kind of resource lock to prevent race conditions
