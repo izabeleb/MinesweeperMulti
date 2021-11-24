@@ -16,8 +16,8 @@ class Page:
 
     size: int
 
-    # the page data, all elements should be of the same type and should be json
-    # serializable by the flask JSONEncoder:
+    # all elements of the the page data should be of the same type and should
+    # be json serializable by the flask JSONEncoder:
     #   https://github.com/pallets/flask/blob/7620cb70dbcbf71bca651e6f2eef3cbb05999272/src/flask/json/__init__.py#L19
     data: list
 
@@ -25,13 +25,6 @@ class Page:
         for datum in self.data:
             if not dataclasses.is_dataclass(datum):
                 raise ValueError("all data values must be dataclasses")
-
-    # def to_json(self):
-    #     return {
-    #         "page": self.page,
-    #         "size": self.size,
-    #         "data": [i.to_json() for i in self.data]
-    #     }
 
 
 # todo: we probably want some base class so we can implement multiple wrappers around storage mechanisms
