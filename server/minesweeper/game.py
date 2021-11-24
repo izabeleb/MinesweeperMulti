@@ -8,6 +8,7 @@ import datetime
 import uuid
 from uuid import UUID
 
+from minesweeper.cell import CellState, CellChange
 from minesweeper.minefield import MineField
 
 from typing import Any
@@ -46,3 +47,36 @@ class MinesweeperGame:
         # not be included in the serialized json for this class
         self.minefield = MineField(self.height, self.width, self.mine_count)
         self.events: list[GameEvent] = list()
+
+    def update_cell(self, row: int, col: int, state: CellState) -> bool:
+        cell = self.minefield.cells[row][col]
+        is_mine_hit = False
+
+        if state == CellState.Flag:
+            if cell.state == CellState.Closed:
+                cell.state = state
+
+                self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
+        elif state == CellState.Open:
+            if cell.state == CellState.Closed:
+                if cell.is_mine:
+                    is_mine_hit = True
+
+                    self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
+                    self.events.append(GameEvent(EventType.GameEnd, {}))
+
+                elif cell.state != CellState.Open:
+                    for coordinate in self.minefield.get_empty_connected(row, col):
+                        empty_cell = self.minefield.cells[coordinate[0]][coordinate[1]]
+                        empty_cell.state = CellState.Open
+
+                        self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
+        elif state == CellState.Closed:
+            if cell.state == CellState.Flag:
+                cell.state = state
+
+                self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
+        else:
+            raise ValueError(f"unsupported cell state '{state}'")
+
+        return is_mine_hit

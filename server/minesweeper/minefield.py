@@ -1,9 +1,8 @@
 import random
 
-from minesweeper.cell import Cell
+from minesweeper.cell import Cell, CellState
 
 
-# todo: implement some kind of resource lock to prevent race conditions
 class MineField:
     def __init__(self, rows: int, cols: int, mine_count: int):
         """Representation of a minesweeper field."""
