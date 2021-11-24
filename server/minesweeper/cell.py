@@ -21,13 +21,6 @@ class CellChange:
     col: int
     state: CellState
 
-    def to_json(self):
-        return {
-            "row": self.row,
-            "col": self.col,
-            "state": self.state
-        }
-
 
 @dataclass
 class Cell:

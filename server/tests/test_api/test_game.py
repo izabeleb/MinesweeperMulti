@@ -1,5 +1,7 @@
 import itertools
 
+from flask.json import JSONEncoder
+
 import app
 
 import unittest
@@ -12,23 +14,27 @@ from minesweeper.cell import CellState
 import uuid
 from uuid import UUID
 
+import werkzeug.http
+
+import json
+
 
 class TestGetGame(unittest.TestCase):
     def setUp(self):
-        self._game_0 = MinesweeperGame(10, 10, 10)
-        self._game_1 = MinesweeperGame(10, 10, 10)
-        self._game_2 = MinesweeperGame(10, 10, 10)
-        self._game_3 = MinesweeperGame(10, 10, 10)
-        self._game_4 = MinesweeperGame(10, 10, 10)
+        self._game_0 = MinesweeperGame(4, 4, 4)
+        self._game_1 = MinesweeperGame(4, 4, 4)
+        self._game_2 = MinesweeperGame(4, 4, 4)
+        self._game_3 = MinesweeperGame(4, 4, 4)
+        self._game_4 = MinesweeperGame(4, 4, 4)
 
         self._sorted_games = sorted([
-                                        self._game_0,
-                                        self._game_1,
-                                        self._game_2,
-                                        self._game_3,
-                                        self._game_4
-                                    ],
-                                    key=lambda game: game.created_at)
+            self._game_0,
+            self._game_1,
+            self._game_2,
+            self._game_3,
+            self._game_4
+        ],
+            key=lambda game: game.created_at)
 
         self._store = MemoryStore()
         self._store.add_game(self._game_0)
@@ -44,11 +50,16 @@ class TestGetGame(unittest.TestCase):
 
         actual = response.json
         expected = {
-            'created_at': self._game_0.created_at.timestamp(),
-            'url': f'/game/{self._game_0.id}'
+            'game': {
+                'created_at': werkzeug.http.http_date(self._game_0.created_at),
+                'id': str(self._game_0.id),
+                'width': self._game_0.width,
+                'height': self._game_0.height,
+                'mine_count': self._game_0.mine_count,
+            }
         }
 
-        self.assertEqual(expected, actual)
+        self.assertDictEqual(expected, actual)
 
     def test_get_non_existent_game(self):
         response = self._client.get(f"/game/{uuid.uuid4()}")
@@ -57,10 +68,13 @@ class TestGetGame(unittest.TestCase):
 
     def test_get_page_size_3(self):
         response = self._client.get(f"/games?page=1&size=3")
-        self.assertListEqual(response.json["data"], [i.to_json() for i in [self._game_0, self._game_1, self._game_2]])
+
+        self.assertListEqual(json.loads(json.dumps([self._game_0, self._game_1, self._game_2], cls=JSONEncoder)),
+                             response.json["page"]["data"])
 
         response = self._client.get(f"/games?page=2&size=3")
-        self.assertListEqual(response.json["data"], [i.to_json() for i in [self._game_3, self._game_4]])
+        self.assertListEqual(json.loads(json.dumps([self._game_3, self._game_4], cls=JSONEncoder)),
+                             response.json["page"]["data"])
 
 
 class TestPutGame(unittest.TestCase):
@@ -204,7 +218,8 @@ class TestUpdateGame(unittest.TestCase):
             }
         })
 
-        self.assertDictEqual({"is_mine_hit": False, "cell_changes": [{"row": 0, "col": 0, "state": "closed"}]}, response.json)
+        self.assertDictEqual({"is_mine_hit": False, "cell_changes": [{"row": 0, "col": 0, "state": "closed"}]},
+                             response.json)
 
     def test_update_open_cell(self):
         self._minefield.cells[0][0].state = CellState.Open
@@ -250,4 +265,5 @@ class TestUpdateGame(unittest.TestCase):
             }
         })
 
-        self.assertDictEqual({"is_mine_hit": False, "cell_changes": [{"col": 0, "row": 0, "state": "flag"}]}, response.json)
+        self.assertDictEqual({"is_mine_hit": False, "cell_changes": [{"col": 0, "row": 0, "state": "flag"}]},
+                             response.json)
