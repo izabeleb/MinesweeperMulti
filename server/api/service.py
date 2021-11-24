@@ -46,53 +46,14 @@ class MinesweeperService:
 
     def update_game(self, request: UpdateGameFieldRequest) -> Optional[UpdateGameFieldResponse]:
         """Update the board state."""
-        response = self.get_game(GetGameRequest(request.id))
-
-        if response is None:
-            return None
-
-        game = response.game
-
-        minefield = game.minefield
-
         cell_change = request.cell_change
 
-        cell = minefield.cells[cell_change.row][cell_change.col]
+        is_mine_hit = self._store.set_cell_state(request.id, cell_change.row, cell_change.col, cell_change.state)
 
-        is_mine_hit = False
-        cell_changes: list[CellChange] = list()
+        if is_mine_hit is None:
+            return None
 
-        if cell_change.state == CellState.Flag:
-            if cell.state == CellState.Closed:
-                cell.state = cell_change.state
-                cell_changes.append(cell_change)
-
-        elif cell_change.state == CellState.Open:
-            if cell.state == CellState.Closed:
-                if cell.is_mine:
-                    is_mine_hit = True
-                elif cell.state != CellState.Open:
-                    for coordinate in minefield.get_empty_connected(cell_change.row, cell_change.col):
-                        empty_cell = minefield.cells[coordinate[0]][coordinate[1]]
-                        empty_cell.state = CellState.Open
-
-                        cell_changes.append(CellChange(coordinate[0], coordinate[1], CellState.Open))
-
-        elif cell_change.state == CellState.Closed:
-            if cell.state == CellState.Flag:
-                cell.state = CellState.Closed
-
-                cell_changes.append(cell_change)
-        else:
-            raise ValueError(f"unsupported cell state '{cell_change.state}'")
-
-        for change in cell_changes:
-            game.events.append(GameEvent(EventType.CellChange, change))
-
-        if is_mine_hit:
-            game.events.append(GameEvent(EventType.GameEnd, {}))
-
-        return UpdateGameFieldResponse(is_mine_hit, cell_changes)
+        return UpdateGameFieldResponse(is_mine_hit)
 
     def get_game_events(self, request: GetGameEventsRequest) -> Optional[GetGameEventsResponse]:
         response = self.get_game(GetGameRequest(request.id))
