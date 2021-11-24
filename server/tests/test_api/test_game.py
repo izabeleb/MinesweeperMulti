@@ -326,5 +326,29 @@ class TestGameEvents(BaseWrapper.BaseGameTest):
         self.assertListEqual(expected, actual)
 
 
+class TestGameField(BaseWrapper.BaseGameTest):
+    def setUp(self):
+        super().setUp()
+
+        self._game = MinesweeperGame(4, 4, 4)
+        self._minefield = self._game.minefield
+        self._cells = self._minefield.cells
+
+        self._store.add_game(self._game)
+
+    def test_field_non_existent_game(self):
+        response = self._client.get(f"/game/{uuid.uuid4()}/field")
+
+        self.assertEqual(404, response.status_code)
+
+    def test_field(self):
+        response = self._client.get(f"/game/{self._game.id}/field")
+
+        actual = response.json["cells"]
+        expected = _to_json_dict(self._cells)
+
+        self.assertListEqual(expected, actual)
+
+
 if __name__ == '__main__':
     unittest.main()

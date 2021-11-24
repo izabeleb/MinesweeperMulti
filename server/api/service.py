@@ -1,6 +1,10 @@
-from api.responses import (PostGameResponse, GetPageResponse, GetGameResponse, UpdateGameFieldResponse,\
-                           GetGameEventsResponse)
-from api.requests import PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest, GetGameEventsRequest
+from api.responses import (
+    PostGameResponse, GetPageResponse, GetGameResponse, UpdateGameFieldResponse, GetGameEventsResponse,
+    GetGameFieldResponse
+)
+from api.requests import (
+    PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest, GetGameEventsRequest, GetGameFieldRequest
+)
 
 from minesweeper.game import MinesweeperGame, EventType, GameEvent
 from minesweeper.cell import CellState, CellChange
@@ -108,3 +112,13 @@ class MinesweeperService:
             events = game.events
 
         return GetGameEventsResponse(events)
+
+    def get_game_field(self, request: GetGameFieldRequest) -> Optional[GetGameFieldResponse]:
+        game = self._store.get_game(request.id)
+
+        if game is None:
+            return None
+
+        cells = game.minefield.cells
+
+        return GetGameFieldResponse(cells)

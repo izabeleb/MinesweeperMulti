@@ -4,7 +4,9 @@ import flask
 from flask import Flask
 
 from api.service import MemoryStore, MinesweeperService
-from api.requests import PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest, GetGameEventsRequest
+from api.requests import (
+    PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest, GetGameEventsRequest, GetGameFieldRequest
+)
 
 from minesweeper.cell import CellChange
 
@@ -66,8 +68,19 @@ def create_app(store: Optional[MemoryStore] = None):
 
         return flask.jsonify(response)
 
+    @app.route("/game/<game_id>/field", methods=["GET"])
+    def get_game_field(game_id: str):
+        """Handle PUT requests to update the board state."""
+        request = GetGameFieldRequest(UUID(game_id))
+        response = minesweeper_service.get_game_field(request)
+
+        if response is None:
+            flask.abort(404)
+
+        return flask.jsonify(response)
+
     @app.route("/game/<game_id>/field", methods=["PATCH"])
-    def patch_game(game_id: str):
+    def patch_game_field(game_id: str):
         """Handle PUT requests to update the board state."""
         body_json = flask.request.json
 
@@ -83,7 +96,7 @@ def create_app(store: Optional[MemoryStore] = None):
         return flask.jsonify(response)
 
     @app.route("/game/<game_id>/events")
-    def get_events(game_id: str):
+    def get_game_events(game_id: str):
         body_json = flask.request.json
 
         if body_json is not None and "since" in body_json:

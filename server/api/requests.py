@@ -42,3 +42,9 @@ class GetGameEventsRequest:
     """Request for a game's events."""
     id: UUID
     since: Optional[datetime.datetime] = field(default=None)
+
+
+@dataclass(frozen=True)
+class GetGameFieldRequest:
+    """Request for a game's field cells."""
+    id: UUID
