@@ -6,6 +6,8 @@ from flask import Flask
 from api.service import MemoryStore, MinesweeperService
 from api.requests import PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest
 
+from minesweeper.cell import CellChange
+
 from typing import Optional
 
 
@@ -50,18 +52,18 @@ def create_app(store: Optional[MemoryStore] = None):
 
         return flask.jsonify(response.to_json())
 
-    @app.route("/game/<game_id>/field", methods=["UPDATE"])
-    def put_game(game_id: UUID):
+    @app.route("/game/<game_id>/field", methods=["PATCH"])
+    def patch_game(game_id: str):
         """Handle PUT requests to update the board state."""
         body_json = flask.request.json
 
         if body_json is None:
             flask.abort(400)
 
-        request = UpdateGameFieldRequest(game_id=game_id, **body_json)
+        request = UpdateGameFieldRequest(game_id=UUID(game_id), cell_change=CellChange(**body_json["cell_change"]))
         response = minesweeper_service.update_game(request)
 
-        return flask.jsonify(response)
+        return flask.jsonify(response.to_json())
 
     @app.route("/health", methods=["GET"])
     def get_health():

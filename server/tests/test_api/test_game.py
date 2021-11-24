@@ -1,3 +1,5 @@
+import itertools
+
 import app
 
 import unittest
@@ -5,6 +7,7 @@ import unittest
 from api.service import MemoryStore
 
 from minesweeper.game import MinesweeperGame
+from minesweeper.cell import CellState
 
 from uuid import UUID
 
@@ -51,8 +54,6 @@ class TestGetGame(unittest.TestCase):
         self.assertListEqual(response.json["data"], [i.to_json() for i in [self._game_0, self._game_1, self._game_2]])
 
         response = self._client.get(f"/games?page=2&size=3")
-        print(response.json["data"])
-        print([i.to_json() for i in [self._game_3, self._game_4]])
         self.assertListEqual(response.json["data"], [i.to_json() for i in [self._game_3, self._game_4]])
 
 
@@ -99,3 +100,137 @@ class TestPutGame(unittest.TestCase):
         })
 
         self.assertEqual(400, response.status_code)
+
+
+class TestUpdateGame(unittest.TestCase):
+    def setUp(self):
+        self._store = MemoryStore()
+
+        self._client = app.create_app(self._store).test_client()
+
+        response = self._client.post("/games", json={
+            "width": 4,
+            "height": 4,
+            "mine_count": 0
+        })
+
+        response_json = response.json
+
+        self._game_url = response_json["game_url"]
+        self._game_id = UUID(self._game_url.split("/")[-1])
+        self._game = self._store.get_game(self._game_id)
+        self._minefield = self._game.minefield
+
+    def test_hit_empty(self):
+        response = self._client.patch(f"/game/{self._game_id}/field", json={
+            "cell_change": {
+                "row": 0,
+                "col": 0,
+                "state": CellState.Open,
+            }
+        })
+
+        expected = sorted(list(itertools.chain(*[
+            [{"col": j, "row": i, "state": "opened"} for j in range(self._minefield.cols)]
+            for i in range(self._minefield.rows)
+        ])), key=lambda i: (i["row"], i["col"]))
+        actual = sorted(response.json["cell_changes"], key=lambda i: (i["row"], i["col"]))
+
+        self.assertListEqual(expected, actual)
+
+        for row in self._minefield.cells:
+            for cell in row:
+                if cell.state != CellState.Open:
+                    self.fail("all cells should be hit")
+
+    def test_hit_mine(self):
+        self._minefield.cells[0][0].is_mine = True
+
+        response = self._client.patch(f"/game/{self._game_id}/field", json={
+            "cell_change": {
+                "row": 0,
+                "col": 0,
+                "state": CellState.Open,
+            }
+        })
+
+        self.assertTrue(response.json["is_mine_hit"])
+
+    def test_update_flagged_cell(self):
+        self._minefield.cells[0][0].state = CellState.Flag
+
+        response = self._client.patch(f"/game/{self._game_id}/field", json={
+            "cell_change": {
+                "row": 0,
+                "col": 0,
+                "state": CellState.Open,
+            }
+        })
+
+        self.assertDictEqual({"is_mine_hit": False, "cell_changes": []}, response.json)
+
+        response = self._client.patch(f"/game/{self._game_id}/field", json={
+            "cell_change": {
+                "row": 0,
+                "col": 0,
+                "state": CellState.Flag,
+            }
+        })
+
+        self.assertDictEqual({"is_mine_hit": False, "cell_changes": []}, response.json)
+
+        response = self._client.patch(f"/game/{self._game_id}/field", json={
+            "cell_change": {
+                "row": 0,
+                "col": 0,
+                "state": CellState.Closed,
+            }
+        })
+
+        self.assertDictEqual({"is_mine_hit": False, "cell_changes": [{"row": 0, "col": 0, "state": "closed"}]}, response.json)
+
+    def test_update_open_cell(self):
+        self._minefield.cells[0][0].state = CellState.Open
+
+        response = self._client.patch(f"/game/{self._game_id}/field", json={
+            "cell_change": {
+                "row": 0,
+                "col": 0,
+                "state": CellState.Closed,
+            }
+        })
+
+        self.assertDictEqual({"is_mine_hit": False, "cell_changes": []}, response.json)
+
+        response = self._client.patch(f"/game/{self._game_id}/field", json={
+            "cell_change": {
+                "row": 0,
+                "col": 0,
+                "state": CellState.Open,
+            }
+        })
+
+        self.assertDictEqual({"is_mine_hit": False, "cell_changes": []}, response.json)
+
+        response = self._client.patch(f"/game/{self._game_id}/field", json={
+            "cell_change": {
+                "row": 0,
+                "col": 0,
+                "state": CellState.Flag,
+            }
+        })
+
+        self.assertDictEqual({"is_mine_hit": False, "cell_changes": []}, response.json)
+
+    def test_update_closed_cell(self):
+        # see testUpdateGame.test_hist_empty for changing the state of a closed
+        # cell to open in a minefield with no mines
+        response = self._client.patch(f"/game/{self._game_id}/field", json={
+            "cell_change": {
+                "row": 0,
+                "col": 0,
+                "state": CellState.Flag,
+            }
+        })
+
+        self.assertDictEqual({"is_mine_hit": False, "cell_changes": [{"col": 0, "row": 0, "state": "flag"}]}, response.json)

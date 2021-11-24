@@ -5,6 +5,7 @@ import uuid
 from minesweeper.minefield import MineField
 
 
+# todo: add events
 class MinesweeperGame:
     def __init__(self, height: int, width: int, mine_count: int):
         self.created_at = datetime.datetime.now()

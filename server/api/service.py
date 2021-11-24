@@ -2,6 +2,7 @@ from api.responses import PostGameResponse, GetPageResponse, GetGameResponse, Up
 from api.requests import PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest
 
 from minesweeper.game import MinesweeperGame
+from minesweeper.cell import CellState, CellChange
 
 from api.dao import MemoryStore
 
@@ -41,11 +42,35 @@ class MinesweeperService:
         game = self._store.get_game(request.game_id)
         minefield = game.minefield
 
-        row = request.row
-        col = request.col
+        cell_change = request.cell_change
 
-        new_state = request.new_state
+        cell = minefield.cells[cell_change.row][cell_change.col]
 
-        _cell = minefield.cells[row][col].state = new_state
+        is_mine_hit = False
+        cell_changes: list[CellChange] = list()
 
-        return UpdateGameFieldResponse()
+        if cell_change.state == CellState.Flag:
+            if cell.state == CellState.Closed:
+                cell.state = cell_change.state
+                cell_changes.append(cell_change)
+
+        elif cell_change.state == CellState.Open:
+            if cell.state == CellState.Closed:
+                if cell.is_mine:
+                    is_mine_hit = True
+                elif cell.state != CellState.Open:
+                    for coordinate in minefield.get_empty_connected(cell_change.row, cell_change.col):
+                        empty_cell = minefield.cells[coordinate[0]][coordinate[1]]
+                        empty_cell.state = CellState.Open
+
+                        cell_changes.append(CellChange(coordinate[0], coordinate[1], CellState.Open))
+
+        elif cell_change.state == CellState.Closed:
+            if cell.state == CellState.Flag:
+                cell.state = CellState.Closed
+
+                cell_changes.append(cell_change)
+        else:
+            raise ValueError(f"unsupported cell state '{cell_change.state}'")
+
+        return UpdateGameFieldResponse(is_mine_hit, cell_changes)

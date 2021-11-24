@@ -1,4 +1,6 @@
 from minesweeper.game import MinesweeperGame
+from minesweeper.cell import CellChange
+
 from api.dao import Page
 
 from typing import NamedTuple
@@ -32,3 +34,11 @@ class GetGameResponse(NamedTuple):
 
 class UpdateGameFieldResponse(NamedTuple):
     """Response to a field state update request."""
+    is_mine_hit: bool
+    cell_changes: list[CellChange]
+
+    def to_json(self):
+        return {
+            "is_mine_hit": self.is_mine_hit,
+            "cell_changes": [i.to_json() for i in self.cell_changes]
+        }

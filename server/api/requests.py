@@ -2,7 +2,7 @@ from typing import NamedTuple
 
 from uuid import UUID
 
-from minesweeper.cell import CellState
+from minesweeper.cell import CellChange
 
 
 class PostGameRequest(NamedTuple):
@@ -26,6 +26,4 @@ class GetGameRequest(NamedTuple):
 class UpdateGameFieldRequest(NamedTuple):
     """Request to update the state of the game field."""
     game_id: UUID
-    row: int
-    col: int
-    new_state: CellState
+    cell_change: CellChange

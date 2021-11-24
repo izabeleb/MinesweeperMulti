@@ -23,6 +23,7 @@ class Page:
         }
 
 
+# todo: we probably want some base class so we can implement multiple wrappers around storage mechanisms
 class MemoryStore:
     def __init__(self):
         self.games = dict()

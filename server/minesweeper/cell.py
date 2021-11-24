@@ -4,11 +4,29 @@ import enum
 from enum import Enum
 
 
+# todo: hit -> open -> safe && empty -> close -> unknown ?
 @enum.unique
-class CellState(Enum):
-    Flag = enum.auto()
-    Hit = enum.auto()
-    Empty = enum.auto()
+class CellState(str, Enum):
+    Flag = "flag"
+    Open = "opened"
+    Closed = "closed"
+
+    def to_json(self):
+        return self
+
+
+@dataclass
+class CellChange:
+    row: int
+    col: int
+    state: CellState
+
+    def to_json(self):
+        return {
+            "row": self.row,
+            "col": self.col,
+            "state": self.state
+        }
 
 
 @dataclass
@@ -20,7 +38,7 @@ class Cell:
 
     is_mine: bool = field(default=False, init=False)
 
-    state: CellState = field(default=CellState.Empty, init=False)
+    state: CellState = field(default=CellState.Closed, init=False)
 
     def __hash__(self):
         return self.get_coordinate().__hash__()
