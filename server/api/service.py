@@ -26,20 +26,29 @@ class MinesweeperService:
         """Retrieve a list of all game uuids."""
         return GetPageResponse(self._store.get_page(request.page, request.size))
 
-    def get_game(self, request: GetGameRequest) -> GetGameResponse:
+    def get_game(self, request: GetGameRequest) -> Optional[GetGameResponse]:
         """Retrieve the game with the specified uuid."""
         game = self._store.get_game(request.game_id)
+
+        if game is None:
+            return None
 
         response = GetGameResponse(game)
 
         return response
 
-    def update_game(self, request: UpdateGameFieldRequest) -> UpdateGameFieldResponse:
+    def update_game(self, request: UpdateGameFieldRequest) -> Optional[UpdateGameFieldResponse]:
         """Update the board state.
 
         todo: send update events to stream to update all connected clients
         """
-        game = self._store.get_game(request.game_id)
+        response = self.get_game(GetGameRequest(request.game_id))
+
+        if response is None:
+            return None
+
+        game = response.game
+
         minefield = game.minefield
 
         cell_change = request.cell_change

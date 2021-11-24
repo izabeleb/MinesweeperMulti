@@ -9,6 +9,7 @@ from api.service import MemoryStore
 from minesweeper.game import MinesweeperGame
 from minesweeper.cell import CellState
 
+import uuid
 from uuid import UUID
 
 
@@ -48,6 +49,11 @@ class TestGetGame(unittest.TestCase):
         }
 
         self.assertEqual(expected, actual)
+
+    def test_get_non_existent_game(self):
+        response = self._client.get(f"/game/{uuid.uuid4()}")
+
+        self.assertEqual(404, response.status_code)
 
     def test_get_page_size_3(self):
         response = self._client.get(f"/games?page=1&size=3")
@@ -120,6 +126,17 @@ class TestUpdateGame(unittest.TestCase):
         self._game_id = UUID(self._game_url.split("/")[-1])
         self._game = self._store.get_game(self._game_id)
         self._minefield = self._game.minefield
+
+    def test_update_non_existent_game(self):
+        response = self._client.patch(f"/game/{uuid.uuid4()}/field", json={
+            "cell_change": {
+                "row": 0,
+                "col": 0,
+                "state": CellState.Open,
+            }
+        })
+
+        self.assertEqual(404, response.status_code)
 
     def test_hit_empty(self):
         response = self._client.patch(f"/game/{self._game_id}/field", json={

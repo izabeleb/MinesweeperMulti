@@ -50,6 +50,9 @@ def create_app(store: Optional[MemoryStore] = None):
         request = GetGameRequest(UUID(game_id))
         response = minesweeper_service.get_game(request)
 
+        if response is None:
+            flask.abort(404)
+
         return flask.jsonify(response.to_json())
 
     @app.route("/game/<game_id>/field", methods=["PATCH"])
@@ -62,6 +65,9 @@ def create_app(store: Optional[MemoryStore] = None):
 
         request = UpdateGameFieldRequest(game_id=UUID(game_id), cell_change=CellChange(**body_json["cell_change"]))
         response = minesweeper_service.update_game(request)
+
+        if response is None:
+            flask.abort(404)
 
         return flask.jsonify(response.to_json())
 

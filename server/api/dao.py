@@ -4,7 +4,7 @@ from uuid import UUID
 
 from minesweeper.game import MinesweeperGame
 
-from typing import Any
+from typing import Any, Optional
 
 
 @dataclass
@@ -31,8 +31,11 @@ class MemoryStore:
     def add_game(self, game: MinesweeperGame):
         self.games[game.id] = game
 
-    def get_game(self, game_id: UUID) -> MinesweeperGame:
-        return self.games[game_id]
+    def get_game(self, game_id: UUID) -> Optional[MinesweeperGame]:
+        try:
+            return self.games[game_id]
+        except KeyError:
+            return None
 
     def get_page(self, page: int, size: int) -> Page:
         games = sorted(self.games.values(),
