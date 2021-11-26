@@ -1,8 +1,5 @@
 import React from 'react';
 
-import { Button } from '@react95/core';
-import { Confcp109, Winmine1 } from '@react95/icons';
-
 export enum CellStatus {
     Flagged = "flagged",
     Opened = "opened",
@@ -40,22 +37,19 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
 
         switch (status) {
             case CellStatus.Flagged:
-                icon = <Confcp109 variant="16x16_4" />
+                icon = <div>flagged</div>
 
                 break;
             case CellStatus.Opened:
-                if (isMine) {
-                    icon = <Winmine1 variant="16x16_4" />
-                }
+                icon = <div>opened</div>
 
                 break;
             case CellStatus.Closed:
+                icon = <div>closed</div>
                 break;
         }
 
-        return <Button style={{height: 'parent'}}>
-            {icon}
-        </Button>
+        return icon
     }
 }
 
