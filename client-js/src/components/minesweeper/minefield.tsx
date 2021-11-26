@@ -17,7 +17,7 @@ export class MinefieldCommponent extends React.Component<MinefieldProps, Minefie
     render() {
         let cells = this.props.cells;
 
-        return <div>
+        return <div className="window minefield">
             {
                 cells.map(row => <tr>
                         {

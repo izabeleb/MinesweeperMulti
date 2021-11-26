@@ -1,4 +1,6 @@
 import React from 'react';
+import { BsFlagFill, BsSquare } from 'react-icons/bs';
+import { FaBomb } from 'react-icons/fa';
 
 export enum CellStatus {
     Flagged = "flagged",
@@ -32,24 +34,28 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
 
     render() {
         let {isMine, status} = this.props.cell;
+        let iconSize='20px'
 
-        let icon = null;
+        let icon = <BsSquare className="cell_icon" size={iconSize} />;
+
+        let buttonClassName = "cell_button"
 
         switch (status) {
             case CellStatus.Flagged:
-                icon = <div>flagged</div>
+                icon = <BsFlagFill className="cell_icon" size={iconSize} color='red'/>
 
                 break;
             case CellStatus.Opened:
-                icon = <div>opened</div>
+                if (isMine)
+                    icon = <FaBomb className="cell_icon" size={iconSize} />
+                
+                buttonClassName += " open_cell_button"
 
                 break;
             case CellStatus.Closed:
-                icon = <div>closed</div>
                 break;
         }
 
-        return icon
+        return <button className={buttonClassName}>{icon}</button>
     }
 }
-

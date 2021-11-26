@@ -4,6 +4,10 @@ import { Cell, CellStatus } from './components/minesweeper/cell';
 import { MinefieldCommponent } from './components/minesweeper/minefield';
 import reportWebVitals from './reportWebVitals';
 
+import '98.css'
+import './components/minesweeper/cell.css'
+import './components/minesweeper/minefield.css'
+
 let rows = 4;
 let cols = rows;
 
@@ -18,12 +22,14 @@ for (let i: number = 0; i < rows; i++) {
             col: 0,
             adjacentMines: 0,
             isMine: false,
-            status: CellStatus.Opened,
+            status: CellStatus.Closed,
         } as Cell;
   }
 }
 
 cells[0][0].isMine = true;
+cells[0][0].status = CellStatus.Opened;
+
 cells[0][1].status = CellStatus.Flagged;
 
 ReactDOM.render(
