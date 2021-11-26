@@ -7,7 +7,7 @@ from api.requests import (
 )
 
 from minesweeper.game import MinesweeperGame, EventType, GameEvent
-from minesweeper.cell import CellState, CellChange
+from minesweeper.cell import CellStatus, CellChange
 
 from api.dao import MemoryStore
 

@@ -6,7 +6,7 @@ from api.service import MinesweeperService, MemoryStore
 from api.requests import *
 
 from minesweeper.game import MinesweeperGame, GameEvent, EventType
-from minesweeper.cell import CellState
+from minesweeper.cell import CellStatus
 
 import uuid
 from uuid import UUID
@@ -140,7 +140,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             "cell_change": {
                 "row": 0,
                 "col": 0,
-                "state": CellState.Open,
+                "state": CellStatus.Opened,
             }
         })
 
@@ -151,7 +151,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             "cell_change": {
                 "row": 0,
                 "col": 0,
-                "state": CellState.Open,
+                "state": CellStatus.Opened,
             }
         })
 
@@ -161,7 +161,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
 
         for row in self._minefield.cells:
             for cell in row:
-                if cell.state != CellState.Open:
+                if cell.state != CellStatus.Opened:
                     self.fail("all cells should be open")
 
     def test_open_mine(self):
@@ -171,7 +171,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             "cell_change": {
                 "row": 0,
                 "col": 0,
-                "state": CellState.Open,
+                "state": CellStatus.Opened,
             }
         })
 
@@ -185,13 +185,13 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
         self.assertListEqual(expected, actual)
 
     def test_update_flagged_cell(self):
-        self._minefield.cells[0][0].state = CellState.Flag
+        self._minefield.cells[0][0].state = CellStatus.Flagged
 
         response = self._client.patch(f"/game/{self._game_id}/field", json={
             "cell_change": {
                 "row": 0,
                 "col": 0,
-                "state": CellState.Open,
+                "state": CellStatus.Opened,
             }
         })
 
@@ -201,7 +201,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             "cell_change": {
                 "row": 0,
                 "col": 0,
-                "state": CellState.Flag,
+                "state": CellStatus.Flagged,
             }
         })
 
@@ -211,7 +211,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             "cell_change": {
                 "row": 0,
                 "col": 0,
-                "state": CellState.Closed,
+                "state": CellStatus.Closed,
             }
         })
 
@@ -225,13 +225,13 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
         self.assertListEqual(expected, actual)
 
     def test_update_open_cell(self):
-        self._minefield.cells[0][0].state = CellState.Open
+        self._minefield.cells[0][0].state = CellStatus.Opened
 
         response = self._client.patch(f"/game/{self._game_id}/field", json={
             "cell_change": {
                 "row": 0,
                 "col": 0,
-                "state": CellState.Closed,
+                "state": CellStatus.Closed,
             }
         })
 
@@ -241,7 +241,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             "cell_change": {
                 "row": 0,
                 "col": 0,
-                "state": CellState.Open,
+                "state": CellStatus.Opened,
             }
         })
 
@@ -251,7 +251,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             "cell_change": {
                 "row": 0,
                 "col": 0,
-                "state": CellState.Flag,
+                "state": CellStatus.Flagged,
             }
         })
 
@@ -271,7 +271,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
             "cell_change": {
                 "row": 0,
                 "col": 0,
-                "state": CellState.Flag,
+                "state": CellStatus.Flagged,
             }
         })
 
@@ -295,7 +295,7 @@ class TestGameEvents(BaseWrapper.BaseGameTest):
         self._store.add_game(self._game)
 
         self._events.append(GameEvent(EventType.GameStart, {}))
-        self._events.append(GameEvent(EventType.CellChange, CellChange(0, 0, CellState.Open)))
+        self._events.append(GameEvent(EventType.CellChange, CellChange(0, 0, CellStatus.Opened)))
         self._events.append(GameEvent(EventType.GameEnd, {}))
 
         self._start_time = self._events[0].occurred_at

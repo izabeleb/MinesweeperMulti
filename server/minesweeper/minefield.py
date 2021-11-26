@@ -1,6 +1,6 @@
 import random
 
-from minesweeper.cell import Cell, CellState
+from minesweeper.cell import Cell, CellStatus
 
 
 class MineField:

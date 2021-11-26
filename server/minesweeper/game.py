@@ -8,7 +8,7 @@ import datetime
 import uuid
 from uuid import UUID
 
-from minesweeper.cell import CellState, CellChange
+from minesweeper.cell import CellStatus, CellChange
 from minesweeper.minefield import MineField
 
 from typing import Any
@@ -48,31 +48,31 @@ class MinesweeperGame:
         self.minefield = MineField(self.height, self.width, self.mine_count)
         self.events: list[GameEvent] = list()
 
-    def update_cell(self, row: int, col: int, state: CellState) -> bool:
+    def update_cell(self, row: int, col: int, state: CellStatus) -> bool:
         cell = self.minefield.cells[row][col]
         is_mine_hit = False
 
-        if state == CellState.Flag:
-            if cell.state == CellState.Closed:
+        if state == CellStatus.Flagged:
+            if cell.state == CellStatus.Closed:
                 cell.state = state
 
                 self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
-        elif state == CellState.Open:
-            if cell.state == CellState.Closed:
+        elif state == CellStatus.Opened:
+            if cell.state == CellStatus.Closed:
                 if cell.is_mine:
                     is_mine_hit = True
 
                     self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
                     self.events.append(GameEvent(EventType.GameEnd, {}))
 
-                elif cell.state != CellState.Open:
+                elif cell.state != CellStatus.Opened:
                     for coordinate in self.minefield.get_empty_connected(row, col):
                         empty_cell = self.minefield.cells[coordinate[0]][coordinate[1]]
-                        empty_cell.state = CellState.Open
+                        empty_cell.state = CellStatus.Opened
 
                         self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
-        elif state == CellState.Closed:
-            if cell.state == CellState.Flag:
+        elif state == CellStatus.Closed:
+            if cell.state == CellStatus.Flagged:
                 cell.state = state
 
                 self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))

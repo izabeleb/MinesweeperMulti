@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from minesweeper.game import MinesweeperGame
-from minesweeper.cell import CellState
+from minesweeper.cell import CellStatus
 
 from typing import Any, Optional
 
@@ -59,7 +59,7 @@ class MemoryStore:
 
         return Page(page, size, games)
 
-    def set_cell_state(self, game_id: UUID, row: int, col: int, state: CellState):
+    def set_cell_state(self, game_id: UUID, row: int, col: int, state: CellStatus):
         if game_id not in self.games:
             return None
 

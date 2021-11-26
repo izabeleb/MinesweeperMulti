@@ -5,9 +5,9 @@ from enum import Enum
 
 
 @enum.unique
-class CellState(str, Enum):
-    Flag = "flag"
-    Open = "opened"
+class CellStatus(str, Enum):
+    Flagged = "flagged"
+    Opened = "opened"
     Closed = "closed"
 
 
@@ -15,7 +15,7 @@ class CellState(str, Enum):
 class CellChange:
     row: int
     col: int
-    state: CellState
+    state: CellStatus
 
 
 @dataclass
@@ -27,7 +27,7 @@ class Cell:
 
     is_mine: bool = field(default=False, init=False)
 
-    state: CellState = field(default=CellState.Closed, init=False)
+    state: CellStatus = field(default=CellStatus.Closed, init=False)
 
     def __hash__(self):
         return self.get_coordinate().__hash__()
