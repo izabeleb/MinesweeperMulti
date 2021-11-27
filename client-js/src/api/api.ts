@@ -1,13 +1,6 @@
-import { Cell } from "../components/minesweeper/cell";
+import { Cell, CellStatus } from "../components/minesweeper/cell";
+import { GameEvent, GameData } from './types';
 import _ from 'lodash';
-
-export interface GameData {
-    id: string, // todo: might be better to use a concrete UUID type here
-    height: number,
-    width: number,
-    mineCount: number,
-    createdAt: Date,
-}
 
 /**
  * Retrieve the endpoint for POSTing a new game.
@@ -51,6 +44,38 @@ function getGameEndpoint(base_url: string, id: string): string {
  */
 function getGameFieldEndpoint(base_url: string, id: string): string {
     return `http://${base_url}/game/${id}/field`
+}
+
+/**
+ * Retrieve the endpoint to use when PATCHing a field for a specific game.
+ * 
+ * @param base_url the base url for the endopint, typically a domain name.
+ * @param id the id of game to retrieve.
+ * @returns the endpoint to use when patching a field for a specific game.
+ */
+function patchGameFieldEndpoint(base_url: string, id: string): string {
+    return `http://${base_url}/game/${id}/field`
+}
+
+/**
+ * Retrieve the endpoint to use when GETting game events.
+ * 
+ * @param base_url the base url for the endopint, typically a domain name.
+ * @param id the id of the game whose updates to retrieve.
+ * @returns the endpoint to use when querying for game updates.
+ */
+function getGameEventsEndpoint(base_url: string, id: string): string {
+    return `http://${base_url}/game/${id}/events`
+}
+
+/**
+ * Retrieve teh endpoint to use when checking the target server's health.
+ * 
+ * @param base_url the base url for the endopint, typically a domain name.
+ * @returns the endpoint to use when querying teh server's health status.
+ */
+function getServerHealthEndpoint(base_url: string): string {
+    return `http://${base_url}/health`
 }
 
 /**
@@ -151,9 +176,70 @@ export class MinesweeperService {
         const response = await fetch(getGameFieldEndpoint(this.base_url, id));
         const json = await response.json();
 
-        const cells: Cell[][] = json['cells']
+        const cells: Cell[][] = await json['cells']
             .map((row: Cell[]) => row.map((cell: Cell) => this._snakeToCamelObject(cell)));
 
         return cells;
+    }
+
+    /**
+     * Send a field update to teh server.
+     * 
+     * @param id the id of the game whose field you are updating.
+     * @param row the row of the targe cell.
+     * @param col the column of the target cell.
+     * @param status the new status for  the cell.
+     */
+    async patchField(id: string, row: number, col: number, status: CellStatus) {
+        let response = await fetch(patchGameFieldEndpoint(this.base_url, id), {
+            method: "PATCH",
+            headers: {
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify({
+                'row': row,
+                'col': col,
+                'status': status,
+            })
+        });
+    }
+
+    /**
+     * Get a list of events whicih have occurred since a current time.
+     * 
+     * @param id the id of the game.
+     * @param since the earliest time you want to receive game event data from.
+     * @returns a Promise with a list of the GameEvents.
+     */
+    async getGameEvents(id: string, since?: Date): Promise<GameEvent[]> {
+        let response;
+
+        if (since !== undefined) {
+            response = await fetch(getGameEventsEndpoint(this.base_url, id), {
+                body: JSON.stringify({
+                    'since': since.getUTCMilliseconds(),
+                })
+            });
+        } else {
+            response = await fetch(getGameEventsEndpoint(this.base_url, id));
+        }
+
+        let json = await response.json();
+
+        let events: GameEvent[] = await json['events']
+            .map((event: any) => this._snakeToCamelObject(event));
+        
+        return events;
+    }
+
+    /**
+     * Check the status of the target MinesweeperMulti server.
+     * 
+     * @returns a Promise container true if the server is healthy, and false is unhealthy.
+     */
+    async getHealth(): Promise<boolean> {
+        let response = await fetch(getServerHealthEndpoint(this.base_url));
+        
+        return response.ok
     }
 }

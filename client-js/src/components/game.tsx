@@ -1,5 +1,6 @@
 import React from 'react';
-import { GameData, IPage, MinesweeperService } from '../api/api';
+import { IPage, MinesweeperService } from '../api/api';
+import { GameData } from '../api/types';
 import { Cell, CellStatus } from './minesweeper/cell';
 import { MinefieldCommponent } from './minesweeper/minefield';
 
