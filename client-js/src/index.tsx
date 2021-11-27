@@ -1,7 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Cell, CellStatus } from './components/minesweeper/cell';
-import { MinefieldCommponent } from './components/minesweeper/minefield';
 import reportWebVitals from './reportWebVitals';
 import { MinesweeperService, GameData } from './api/api'
 import { GameComponent } from './components/game';
@@ -11,32 +9,34 @@ import './components/minesweeper/cell.css';
 import './components/minesweeper/minefield.css';
 
 interface IProps {
-  service: MinesweeperService,
+    service: MinesweeperService,
 }
 
 interface IState {
-  game?: GameData,
+    game?: GameData,
 }
 
+/**
+ * Basic wrapper componen around the game component which fetches the game data.
+ */
 class WrapperComponent extends React.Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
+    constructor(props: IProps) {
+        super(props);
 
-    this.state = {
-      
-    };
+        this.state = {
+        
+        };
+    }
+
+    componentDidMount() {
+        this.props.service.createGame(4, 4, 4)
+        .then(id => this.props.service.getGame(id)
+            .then(data => this.setState({game: data})));
   }
 
-  componentDidMount() {
-    this.props.service.createGame(4, 4, 4)
-      .then(id => this.props.service.getGame(id)
-        .then(data => this.setState({game: data}))
-        )
-  }
-
-  render() {
-    return <div>{ this.state.game !== undefined ? <GameComponent service={this.props.service} gameData={this.state.game} /> : 'no game data available'}</div>
-  }
+    render() {
+        return <div>{ this.state.game !== undefined ? <GameComponent service={this.props.service} gameData={this.state.game} /> : 'no game data available'}</div>
+      }
 }
 
 let service = new MinesweeperService("localhost:5000");

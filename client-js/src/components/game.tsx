@@ -4,11 +4,6 @@ import { Cell, CellStatus } from './minesweeper/cell';
 import { MinefieldCommponent } from './minesweeper/minefield';
 
 interface GameProps {
-    // id: string,
-    // width: number,
-    // height: number,
-    // mineCount: number,
-    // createdAt: Date,
     gameData: GameData,
   
     service: MinesweeperService,
@@ -17,36 +12,26 @@ interface GameProps {
 interface GameState {
     cells?: Cell[][]
 }
-  
- export class GameComponent extends React.Component<GameProps, GameState> {
+
+export class GameComponent extends React.Component<GameProps, GameState> {
     service: MinesweeperService;
   
     constructor(props: GameProps) {
-      super(props)
+        super(props)
   
-      this.service = props.service;
+        this.service = props.service;
       
-      this.state = {
-  
-      }
+        this.state = {
+
+        }
     }
 
     componentDidMount() {
-        // this.service.getField(this.props.gameData.id)
-        //     .then(cells => this.setState({cells: cells}));
-
         this.service.getField(this.props.gameData.id)
-            .then(cells => {
-                cells.forEach(row => row.forEach(cell => cell.status = CellStatus.Opened));
-
-                console.log(cells);
-
-                this.setState({cells: cells});
-            }
-        );
+            .then(cells => this.setState({cells: cells}));
     }
   
     render() {
-      return  <div>{ this.state.cells !== undefined ? <MinefieldCommponent cells={this.state.cells} /> : null }</div>
+        return  <div>{ this.state.cells !== undefined ? <MinefieldCommponent cells={this.state.cells} /> : null }</div>
     }
-  }
+}
