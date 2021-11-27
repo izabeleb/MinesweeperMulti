@@ -1,40 +1,49 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Cell, CellStatus } from './components/minesweeper/cell';
-import { MinefieldCommponent } from './components/minesweeper/minefield';
 import reportWebVitals from './reportWebVitals';
+import { MinesweeperService, GameData } from './api/api'
+import { GameComponent } from './components/game';
 
-import '98.css'
-import './components/minesweeper/cell.css'
-import './components/minesweeper/minefield.css'
+import '98.css';
+import './components/minesweeper/cell.css';
+import './components/minesweeper/minefield.css';
 
-let rows = 4;
-let cols = rows;
-
-let cells: Cell[][] = [];
-
-for (let i: number = 0; i < rows; i++) {
-  cells[i] = [];
-
-  for (let j = 0; j < cols; j++) {
-    cells[i][j] = {
-            row: 0,
-            col: 0,
-            adjacentMines: 0,
-            isMine: false,
-            status: CellStatus.Closed,
-        } as Cell;
-  }
+interface IProps {
+    service: MinesweeperService,
 }
 
-cells[0][0].isMine = true;
-cells[0][0].status = CellStatus.Opened;
+interface IState {
+    game?: GameData,
+}
 
-cells[0][1].status = CellStatus.Flagged;
+/**
+ * Basic wrapper componen around the game component which fetches the game data.
+ */
+class WrapperComponent extends React.Component<IProps, IState> {
+    constructor(props: IProps) {
+        super(props);
+
+        this.state = {
+        
+        };
+    }
+
+    componentDidMount() {
+        this.props.service.createGame(4, 4, 4)
+        .then(id => this.props.service.getGame(id)
+            .then(data => this.setState({game: data})));
+  }
+
+    render() {
+        return <div>{ this.state.game !== undefined ? <GameComponent service={this.props.service} gameData={this.state.game} /> : 'no game data available'}</div>
+      }
+}
+
+let service = new MinesweeperService("localhost:5000");
 
 ReactDOM.render(
   <React.StrictMode>
-    <MinefieldCommponent cells={cells}/>
+    <WrapperComponent service={service}/>
   </React.StrictMode>,
   document.getElementById('root')
 );

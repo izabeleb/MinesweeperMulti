@@ -2,6 +2,9 @@ import React from 'react';
 import { BsFlagFill, BsSquare } from 'react-icons/bs';
 import { FaBomb } from 'react-icons/fa';
 
+/**
+ * Enum specifying the state of a cell.
+ */
 export enum CellStatus {
     Flagged = "flagged",
     Opened = "opened",
