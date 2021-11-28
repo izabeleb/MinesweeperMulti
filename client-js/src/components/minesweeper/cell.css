@@ -18,3 +18,41 @@
 .cell_icon {
     margin: 10px;
 }
+
+
+/* Styles for open cell bodies */
+.cell_mine_count {
+    font-weight: bolder;
+}
+
+.open1 {
+    color: blue;
+}
+
+.open2 {
+    color: green;
+}
+
+.open3 {
+    color: red;
+}
+
+.open4 {
+    color: purple;
+}
+
+.open5 {
+    color: maroon;
+}
+
+.open6 {
+    color: turquoise;
+}
+
+.open7 {
+    color: black;
+}
+
+.open8 {
+    color: gray;
+}

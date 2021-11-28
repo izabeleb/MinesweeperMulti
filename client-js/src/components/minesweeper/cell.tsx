@@ -18,7 +18,8 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
         super(props)
 
         this.state = {
-            status: props.cell.status,
+            // status: props.cell.status,
+            status: CellStatus.Opened,
         }
     }
 
@@ -66,8 +67,19 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
         return false
     }
 
+    /**
+     * Get the JSX element body for an opened cell with at least 1 adjacent mine.
+     * 
+     * @returns a JSX element representing the amount of mines next to a cell.
+     */
+    private _getNumberElement(): JSX.Element {
+        let className = `cell_mine_count open${this.props.cell.adjacentMines}`
+
+        return <p className={className}>{this.props.cell.adjacentMines}</p>
+    }
+
     render() {
-        let { isMine } = this.props.cell;
+        let { isMine, adjacentMines } = this.props.cell;
         let { status } = this.state;
 
         let iconSize='20px'
@@ -82,8 +94,13 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
 
                 break;
             case CellStatus.Opened:
-                if (isMine)
+                if (isMine) {
                     icon = <FaBomb className="cell_icon" size={iconSize} />
+                } else if (adjacentMines > 0) {
+                    icon = this._getNumberElement();
+                } else {
+                    icon = <p style={{visibility: 'hidden'}}>0</p>
+                }
                 
                 buttonClassName += " open_cell_button"
 
@@ -92,9 +109,6 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
                 break;
         }
 
-        console.log(`=== 000 (${this.props.cell.row}, ${this.props.cell.col}) ${this.state.status} ===`)
-
-        // return <button className={buttonClassName}>{icon}</button>
         return <button onClick={this.handleOnClick} onContextMenu={this.handleOnContextmenu} className={buttonClassName}>{icon}</button>
     }
 }
