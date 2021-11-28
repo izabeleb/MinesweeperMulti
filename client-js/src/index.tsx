@@ -9,7 +9,7 @@ import './components/minesweeper/cell.css';
 import './components/minesweeper/minefield.css';
 
 interface IProps {
-    service: MinesweeperService,
+    service: MinesweeperService,    
 }
 
 interface IState {
@@ -29,18 +29,21 @@ class WrapperComponent extends React.Component<IProps, IState> {
     }
 
     componentDidMount() {
-        this.props.service.createGame(4, 4, 4)
-        .then(id => this.props.service.getGame(id)
-            .then(data => this.setState({game: data})));
-  }
+        if (this.state.game === undefined) {
+            this.props.service.createGame(4, 4, 4)
+            .then(id => this.props.service.getGame(id)
+                .then(data => this.setState({game: data})));
+        }
+    }
 
     render() {
         return <div>{ this.state.game !== undefined ? <GameComponent service={this.props.service} gameData={this.state.game} /> : 'no game data available'}</div>
-      }
+    }
 }
 
 let service = new MinesweeperService("localhost:5000");
 
+// todo: add routes
 ReactDOM.render(
   <React.StrictMode>
     <WrapperComponent service={service}/>

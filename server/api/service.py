@@ -48,7 +48,7 @@ class MinesweeperService:
         """Update the board state."""
         cell_change = request.cell_change
 
-        is_mine_hit = self._store.set_cell_state(request.id, cell_change.row, cell_change.col, cell_change.state)
+        is_mine_hit = self._store.set_cell_state(request.id, cell_change.row, cell_change.col, cell_change.status)
 
         if is_mine_hit is None:
             return None

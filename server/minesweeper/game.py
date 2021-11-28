@@ -53,27 +53,27 @@ class MinesweeperGame:
         is_mine_hit = False
 
         if state == CellStatus.Flagged:
-            if cell.state == CellStatus.Closed:
-                cell.state = state
+            if cell.status == CellStatus.Closed:
+                cell.status = state
 
                 self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
         elif state == CellStatus.Opened:
-            if cell.state == CellStatus.Closed:
+            if cell.status == CellStatus.Closed:
                 if cell.is_mine:
                     is_mine_hit = True
 
                     self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
                     self.events.append(GameEvent(EventType.GameEnd, {}))
 
-                elif cell.state != CellStatus.Opened:
+                elif cell.status != CellStatus.Opened:
                     for coordinate in self.minefield.get_empty_connected(row, col):
                         empty_cell = self.minefield.cells[coordinate[0]][coordinate[1]]
-                        empty_cell.state = CellStatus.Opened
+                        empty_cell.status = CellStatus.Opened
 
                         self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
         elif state == CellStatus.Closed:
-            if cell.state == CellStatus.Flagged:
-                cell.state = state
+            if cell.status == CellStatus.Flagged:
+                cell.status = state
 
                 self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
         else:

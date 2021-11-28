@@ -161,7 +161,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
 
         for row in self._minefield.cells:
             for cell in row:
-                if cell.state != CellStatus.Opened:
+                if cell.status != CellStatus.Opened:
                     self.fail("all cells should be open")
 
     def test_open_mine(self):
@@ -185,7 +185,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
         self.assertListEqual(expected, actual)
 
     def test_update_flagged_cell(self):
-        self._minefield.cells[0][0].state = CellStatus.Flagged
+        self._minefield.cells[0][0].status = CellStatus.Flagged
 
         response = self._client.patch(f"/game/{self._game_id}/field", json={
             "cell_change": {
@@ -225,7 +225,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
         self.assertListEqual(expected, actual)
 
     def test_update_open_cell(self):
-        self._minefield.cells[0][0].state = CellStatus.Opened
+        self._minefield.cells[0][0].status = CellStatus.Opened
 
         response = self._client.patch(f"/game/{self._game_id}/field", json={
             "cell_change": {

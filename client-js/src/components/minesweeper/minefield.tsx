@@ -1,8 +1,10 @@
 import React from 'react';
-import { Cell, CellCommponent } from './cell';
+import { CellCommponent } from './cell';
+import { Cell } from './types';
 
 interface MinefieldProps {
-    cells: Cell[][]
+    cells: Cell[][],
+    is_flag_mode: boolean,
 }
 
 interface MinefieldState { }
@@ -17,15 +19,22 @@ export class MinefieldCommponent extends React.Component<MinefieldProps, Minefie
     render() {
         let cells = this.props.cells;
 
-        return <div className="window minefield">
-            {
-                cells.map(row => <tr>
-                        {
-                            row.map(cell => <td key={10}> <CellCommponent cell={cell} /> </td>)
-                        }
-                    </tr>
-                )
-            }
-        </div>
+        return <table className="window minefield">
+            <tbody>
+                {
+                    cells.map((row: Cell[], i: number) =>
+                        <tr key={i}>
+                            {
+                                row.map((cell: Cell, j: number) =>
+                                    <td key={j}>
+                                        <CellCommponent cell={cell} is_flag_mode={this.props.is_flag_mode} />
+                                    </td>
+                                )
+                            }
+                        </tr>
+                    )
+                }
+            </tbody>
+        </table>
     }
 }

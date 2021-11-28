@@ -1,7 +1,7 @@
 import React from 'react';
-import { IPage, MinesweeperService } from '../api/api';
+import { MinesweeperService } from '../api/api';
 import { GameData } from '../api/types';
-import { Cell, CellStatus } from './minesweeper/cell';
+import { Cell } from './minesweeper/types';
 import { MinefieldCommponent } from './minesweeper/minefield';
 
 interface GameProps {
@@ -11,7 +11,8 @@ interface GameProps {
 }
   
 interface GameState {
-    cells?: Cell[][]
+    cells?: Cell[][],
+    is_flag_mode: boolean,
 }
 
 export class GameComponent extends React.Component<GameProps, GameState> {
@@ -23,16 +24,18 @@ export class GameComponent extends React.Component<GameProps, GameState> {
         this.service = props.service;
       
         this.state = {
-
+            is_flag_mode: false,
         }
     }
 
     componentDidMount() {
-        this.service.getField(this.props.gameData.id)
-            .then(cells => this.setState({cells: cells}));
+        if (this.state.cells === undefined) {
+            this.service.getField(this.props.gameData.id)
+                .then(cells => this.setState({cells: cells}));
+        }
     }
   
     render() {
-        return  <div>{ this.state.cells !== undefined ? <MinefieldCommponent cells={this.state.cells} /> : null }</div>
+        return  <div>{ this.state.cells !== undefined ? <MinefieldCommponent cells={this.state.cells} is_flag_mode={this.state.is_flag_mode} /> : null }</div>
     }
 }

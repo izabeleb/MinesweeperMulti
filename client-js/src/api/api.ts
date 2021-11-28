@@ -1,4 +1,4 @@
-import { Cell, CellStatus } from "../components/minesweeper/cell";
+import { Cell, CellStatus } from "../components/minesweeper/types";
 import { GameEvent, GameData } from './types';
 import _ from 'lodash';
 
@@ -177,7 +177,7 @@ export class MinesweeperService {
         const json = await response.json();
 
         const cells: Cell[][] = await json['cells']
-            .map((row: Cell[]) => row.map((cell: Cell) => this._snakeToCamelObject(cell)));
+            .map((row: Cell[]) => row.map((cell: Cell) => this._snakeToCamelObject(cell) as Cell));
 
         return cells;
     }
@@ -191,7 +191,7 @@ export class MinesweeperService {
      * @param status the new status for  the cell.
      */
     async patchField(id: string, row: number, col: number, status: CellStatus) {
-        let response = await fetch(patchGameFieldEndpoint(this.base_url, id), {
+        await fetch(patchGameFieldEndpoint(this.base_url, id), {
             method: "PATCH",
             headers: {
                 'Content-Type': 'application/json'
