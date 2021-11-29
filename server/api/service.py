@@ -25,7 +25,7 @@ class MinesweeperService:
         self._store.add_game(game)
         response = PostGameResponse(game.id)
 
-        game.events.append(GameEvent(EventType.GameStart, {}))
+        game.events.append(GameEvent(EventType.GameStart, None))
 
         return response
 
@@ -65,7 +65,7 @@ class MinesweeperService:
         since = request.since
 
         if since is not None:
-            events = list(filter(lambda event: event.occurred_at.timestamp() >= since.timestamp(), game.events))
+            events = list(filter(lambda event: event.occurred_at.timestamp() > since.timestamp(), game.events))
         else:
             events = game.events
 

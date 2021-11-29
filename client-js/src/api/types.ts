@@ -1,3 +1,5 @@
+import { CellStatus } from "../components/minesweeper/types";
+
 export interface GameData {
     id: string, // todo: might be better to use a concrete UUID type here
     height: number,
@@ -7,13 +9,29 @@ export interface GameData {
 }
 
 export enum EventType {
-    CellChange = "cell_change",
     GameStart = "game_start",
+    CellChange = "cell_change",
     GameEnd = "game_end",
+}
+
+export interface CellChange {
+    row: number,
+    col: number,
+    status: CellStatus,
 }
 
 export interface GameEvent {
     occurredAt: Date,
     eventType: EventType,
-    event: any
+    event: CellChange | { }
+}
+
+/**
+ * An abstraction around a page of data specifying the page number, the maximum
+ * size of the data payload, and the payload.
+ */
+ export interface IPage<T> {
+    page: number,
+    size: number,
+    data: T[],
 }

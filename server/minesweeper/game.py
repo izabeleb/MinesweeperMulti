@@ -63,7 +63,7 @@ class MinesweeperGame:
                     is_mine_hit = True
 
                     self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, state)))
-                    self.events.append(GameEvent(EventType.GameEnd, {}))
+                    self.events.append(GameEvent(EventType.GameEnd, None))
 
                 elif cell.status != CellStatus.Opened:
                     for coordinate in self.minefield.get_empty_connected(row, col):

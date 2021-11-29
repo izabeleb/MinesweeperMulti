@@ -91,7 +91,7 @@ def create_app(store: Optional[MemoryStore] = None):
         if body_json is None:
             flask.abort(400)
 
-        request = UpdateGameFieldRequest(id=UUID(game_id), cell_change=CellChange(**body_json["cell_change"]))
+        request = UpdateGameFieldRequest(id=UUID(game_id), cell_change=CellChange(**body_json))
         response = minesweeper_service.update_game(request)
 
         if response is None:
@@ -101,10 +101,10 @@ def create_app(store: Optional[MemoryStore] = None):
 
     @app.route("/game/<game_id>/events")
     def get_game_events(game_id: str):
-        body_json = flask.request.json
+        since = flask.request.args.get("since", None)
 
-        if body_json is not None and "since" in body_json:
-            request = GetGameEventsRequest(UUID(game_id), datetime.datetime.fromtimestamp(body_json["since"]))
+        if since is not None:
+            request = GetGameEventsRequest(UUID(game_id), datetime.datetime.fromtimestamp(float(since)))
         else:
             request = GetGameEventsRequest(UUID(game_id))
 

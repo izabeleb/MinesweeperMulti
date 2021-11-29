@@ -17,7 +17,7 @@ interface IState {
 }
 
 /**
- * Basic wrapper componen around the game component which fetches the game data.
+ * Basic wrapper component around the game component which fetches the game data.
  */
 class WrapperComponent extends React.Component<IProps, IState> {
     constructor(props: IProps) {

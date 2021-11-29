@@ -1,5 +1,5 @@
 import { Cell, CellStatus } from "../components/minesweeper/types";
-import { GameEvent, GameData } from './types';
+import { GameEvent, GameData, IPage, } from './types';
 import _ from 'lodash';
 
 /**
@@ -64,8 +64,14 @@ function patchGameFieldEndpoint(base_url: string, id: string): string {
  * @param id the id of the game whose updates to retrieve.
  * @returns the endpoint to use when querying for game updates.
  */
-function getGameEventsEndpoint(base_url: string, id: string): string {
-    return `http://${base_url}/game/${id}/events`
+function getGameEventsEndpoint(base_url: string, id: string, since?: Date): string {
+    let endpoint = `http://${base_url}/game/${id}/events`;
+
+    if (since !== undefined) {
+        endpoint += `?${new URLSearchParams({"since": since.getTime().toString()}).toString()}`
+    }
+
+    return endpoint;
 }
 
 /**
@@ -76,16 +82,6 @@ function getGameEventsEndpoint(base_url: string, id: string): string {
  */
 function getServerHealthEndpoint(base_url: string): string {
     return `http://${base_url}/health`
-}
-
-/**
- * An abstraction around a page of data specifying the page number, the maximum
- * size of the data payload, and the payload.
- */
-export interface IPage<T> {
-    page: number,
-    size: number,
-    data: T[],
 }
 
 /**
@@ -109,8 +105,8 @@ export class MinesweeperService {
      * @param data the object to be converted.
      * @returns a JSON object with the key names converted to camel case.
      */
-    private _snakeToCamelObject(data: any) {
-        return _.mapKeys(data, (v, k) => _.camelCase(k))
+    private _snakeToCamelObject(data: any): any {
+        return _.mapKeys(data, (v, k) => _.camelCase(k));
     }
 
     /**
@@ -126,7 +122,7 @@ export class MinesweeperService {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
-              },
+            },
             body: JSON.stringify({
                 "width": width,
                 "height": height,
@@ -215,11 +211,7 @@ export class MinesweeperService {
         let response;
 
         if (since !== undefined) {
-            response = await fetch(getGameEventsEndpoint(this.base_url, id), {
-                body: JSON.stringify({
-                    'since': since.getUTCMilliseconds(),
-                })
-            });
+            response = await fetch(getGameEventsEndpoint(this.base_url, id, since));
         } else {
             response = await fetch(getGameEventsEndpoint(this.base_url, id));
         }
