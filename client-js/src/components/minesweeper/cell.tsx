@@ -15,7 +15,6 @@ interface CellState { }
 
 // todo: could be a funcitonal compoennt
 export class CellCommponent extends React.Component<CellProps, CellState> {
-
     constructor(props: CellProps) {
         super(props);
 
@@ -64,6 +63,10 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
         this.props.isFlagMode ? this.openCell() : this.flagCell();
 
         return false
+    }
+
+    shouldComponentUpdate(nextProps: CellProps) {
+        return nextProps.cell.status !== this.props.cell.status
     }
 
     /**

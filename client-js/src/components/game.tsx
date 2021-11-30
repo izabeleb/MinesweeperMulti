@@ -47,9 +47,6 @@ export class GameComponent extends React.Component<GameProps, GameState> {
             let is_game_over: boolean = previousState.isGameOver;
 
             if (cells !== undefined) {
-                console.log(cells);
-                
-                // cells = Object.assign({}, cells.map(row => Object.assign({}, row.map(cell => Object.assign({}, cell)))));
                 cells = _.cloneDeep(cells);
 
                 events.forEach(event => {                    
