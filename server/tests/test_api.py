@@ -156,6 +156,11 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
                 if cell.status != CellStatus.Opened:
                     self.fail("all cells should be open")
 
+        actual = [event.event_type for event in self._game.events]
+        expected = [EventType.GameStart] + [EventType.CellChange] * 16
+
+        self.assertListEqual(expected, actual)
+
     def test_open_mine(self):
         self._minefield.cells[0][0].is_mine = True
 
@@ -229,12 +234,28 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
         self.assertListEqual(expected, actual)
 
     def test_update_closed_cell(self):
-        # see testUpdateGame.test_hist_empty for changing the status of a closed
+        # see TestUpdateGame.test_hist_empty for changing the status of a closed
         # cell to open in a minefield with no mines
         self._client.patch(f"/game/{self._game_id}/field", json={
             "row": 0,
             "col": 0,
             "status": CellStatus.Flagged,
+        })
+
+        response = self._service.get_game_events(GetGameEventsRequest(self._game_id))
+
+        actual = [event.event_type for event in response.events]
+        expected = [EventType.GameStart, EventType.CellChange]
+
+        self.assertListEqual(expected, actual)
+
+    def test_open_numbered_cell(self):
+        self._minefield.set_mine(1, 1)
+
+        self._client.patch(f"/game/{self._game_id}/field", json={
+            "row": 0,
+            "col": 0,
+            "status": CellStatus.Opened,
         })
 
         response = self._service.get_game_events(GetGameEventsRequest(self._game_id))

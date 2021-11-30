@@ -60,6 +60,7 @@ class MineField:
         return cells
 
     def get_empty_connected(self, row: int, col: int) -> list[tuple[int, int]]:
+        """Retrieves a list of coordinates of cells which are empty, including the starting coordinate."""
         safe_coordinates: list[tuple[int, int]] = list()
         next_cells: set[Cell] = {self.cells[row][col]}
         visited_cells = set()

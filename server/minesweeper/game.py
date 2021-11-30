@@ -53,25 +53,30 @@ class MinesweeperGame:
 
         if status == CellStatus.Flagged:
             if cell.status == CellStatus.Closed:
-                cell.status = status
+                cell.status = CellStatus.Flagged
+                self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, CellStatus.Flagged)))
 
-                self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, status)))
         elif status == CellStatus.Opened:
             if cell.status == CellStatus.Closed:
                 if cell.is_mine:
-                    self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, status)))
-                    self.events.append(GameEvent(EventType.GameEnd, None))  # todo: return game win or loss
+                    self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, CellStatus.Opened)))
+                    self.events.append(GameEvent(EventType.GameEnd, None))  # todo: return game win or lose status
 
-                elif cell.status != CellStatus.Opened:
+                elif cell.adjacent_mines == 0:
                     for coordinate in self.minefield.get_empty_connected(row, col):
                         empty_cell = self.minefield.cells[coordinate[0]][coordinate[1]]
-                        empty_cell.status = CellStatus.Opened
 
-                        self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, status)))
+                        empty_cell.status = CellStatus.Opened
+                        self.events.append(GameEvent(EventType.CellChange,
+                                                     CellChange(coordinate[0], coordinate[1], CellStatus.Opened)))
+                else:
+                    cell.status = CellStatus.Opened
+                    self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, CellStatus.Opened)))
+
         elif status == CellStatus.Closed:
             if cell.status == CellStatus.Flagged:
-                cell.status = status
+                cell.status = CellStatus.Closed
+                self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, CellStatus.Closed)))
 
-                self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, status)))
         else:
             raise ValueError(f"unsupported cell state '{status}'")
