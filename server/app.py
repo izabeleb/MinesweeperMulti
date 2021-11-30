@@ -92,12 +92,12 @@ def create_app(store: Optional[MemoryStore] = None):
             flask.abort(400)
 
         request = UpdateGameFieldRequest(id=UUID(game_id), cell_change=CellChange(**body_json))
-        response = minesweeper_service.update_game(request)
+        response = minesweeper_service.update_game_field(request)
 
         if response is None:
             flask.abort(404)
 
-        return flask.jsonify(response)
+        return "ok"
 
     @app.route("/game/<game_id>/events")
     def get_game_events(game_id: str):
@@ -120,3 +120,8 @@ def create_app(store: Optional[MemoryStore] = None):
         return "ok"
 
     return app
+
+
+if __name__ == "__main__":
+    app = create_app()
+    app.run("localhost", 5000)

@@ -44,16 +44,14 @@ class MinesweeperService:
 
         return response
 
-    def update_game(self, request: UpdateGameFieldRequest) -> Optional[UpdateGameFieldResponse]:
+    def update_game_field(self, request: UpdateGameFieldRequest) -> Optional[UpdateGameFieldResponse]:
         """Update the board state."""
         cell_change = request.cell_change
 
-        is_mine_hit = self._store.set_cell_state(request.id, cell_change.row, cell_change.col, cell_change.status)
-
-        if is_mine_hit is None:
+        if self._store.set_cell_state(request.id, cell_change.row, cell_change.col, cell_change.status) is None:
             return None
 
-        return UpdateGameFieldResponse(is_mine_hit)
+        return UpdateGameFieldResponse()
 
     def get_game_events(self, request: GetGameEventsRequest) -> Optional[GetGameEventsResponse]:
         response = self.get_game(GetGameRequest(request.id))
