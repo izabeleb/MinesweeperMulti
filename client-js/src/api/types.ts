@@ -20,8 +20,14 @@ export interface CellChange {
     status: CellStatus,
 }
 
+/**
+ * Simple abstraction around a number as the milliseconds since the epoch.
+ */
+export type Epoch = number;
+
+
 export interface GameEvent {
-    occurredAt: Date,
+    occurredAt: Epoch,
     eventType: EventType,
     event: CellChange | { }
 }

@@ -30,7 +30,7 @@ class WrapperComponent extends React.Component<IProps, IState> {
 
     componentDidMount() {
         if (this.state.game === undefined) {
-            this.props.service.createGame(4, 4, 4)
+            this.props.service.createGame(10, 10, 4)
             .then(id => this.props.service.getGame(id)
                 .then(data => this.setState({game: data})));
         }

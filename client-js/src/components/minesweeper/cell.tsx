@@ -5,37 +5,36 @@ import { Cell, CellStatus } from './types';
 
 interface CellProps {
     cell: Cell,
-    is_flag_mode: boolean,
+
+    isFlagMode: boolean,
+
+    cellUpdater: (rol: number, col: number, status: CellStatus) => void
 }
 
-interface CellState {
-    status: CellStatus,
-}
+interface CellState { }
 
+// todo: could be a funcitonal compoennt
 export class CellCommponent extends React.Component<CellProps, CellState> {
 
     constructor(props: CellProps) {
-        super(props)
+        super(props);
 
-        this.state = {
-            // status: props.cell.status,
-            status: CellStatus.Opened,
-        }
+        this.state = { }
     }
 
     /**
      * Callback for when the user attempts to flag a cell.
      */
     flagCell = () => {
-        switch (this.state.status) {
+        switch (this.props.cell.status) {
             case CellStatus.Flagged:
-                this.setState({status: CellStatus.Closed});
+                this.props.cellUpdater(this.props.cell.row, this.props.cell.col, CellStatus.Closed);
                 break;
             case CellStatus.Opened:
                 // do nothing...
                 break;
             case CellStatus.Closed:
-                this.setState({status: CellStatus.Flagged});
+                this.props.cellUpdater(this.props.cell.row, this.props.cell.col, CellStatus.Flagged);
                 break;
         }
     }
@@ -44,25 +43,25 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
      * Callback for when a user attempts to open a cell.
      */
     openCell = () => {
-        switch (this.state.status) {
+        switch (this.props.cell.status) {
             case CellStatus.Flagged:
             case CellStatus.Opened:
                 // do nothing...
                 break;
             case CellStatus.Closed:
-                this.setState({status: CellStatus.Opened});
+                this.props.cellUpdater(this.props.cell.row, this.props.cell.col, CellStatus.Opened);
                 break;
         }
     }
 
     handleOnClick = () => {
-        this.props.is_flag_mode ? this.flagCell() : this.openCell();
+        this.props.isFlagMode ? this.flagCell() : this.openCell();
     }
 
     handleOnContextmenu = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
 
-        this.props.is_flag_mode ? this.openCell() : this.flagCell();
+        this.props.isFlagMode ? this.openCell() : this.flagCell();
 
         return false
     }
@@ -79,8 +78,7 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
     }
 
     render() {
-        let { isMine, adjacentMines } = this.props.cell;
-        let { status } = this.state;
+        let { status, isMine, adjacentMines } = this.props.cell;
 
         let iconSize='20px'
 

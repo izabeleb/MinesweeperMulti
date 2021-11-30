@@ -1,10 +1,13 @@
 import React from 'react';
 import { CellCommponent } from './cell';
-import { Cell } from './types';
+import { Cell, CellStatus } from './types';
 
 interface MinefieldProps {
     cells: Cell[][],
-    is_flag_mode: boolean,
+
+    isFlagMode: boolean,
+
+    cellUpdater: (rol: number, col: number, status: CellStatus) => void
 }
 
 interface MinefieldState { }
@@ -27,7 +30,7 @@ export class MinefieldCommponent extends React.Component<MinefieldProps, Minefie
                             {
                                 row.map((cell: Cell, j: number) =>
                                     <td key={j}>
-                                        <CellCommponent cell={cell} is_flag_mode={this.props.is_flag_mode} />
+                                        <CellCommponent cellUpdater={this.props.cellUpdater} cell={cell} isFlagMode={this.props.isFlagMode} />
                                     </td>
                                 )
                             }

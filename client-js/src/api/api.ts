@@ -1,5 +1,5 @@
 import { Cell, CellStatus } from "../components/minesweeper/types";
-import { GameEvent, GameData, IPage, } from './types';
+import { Epoch, GameEvent, GameData, IPage, } from './types';
 import _ from 'lodash';
 
 /**
@@ -64,11 +64,11 @@ function patchGameFieldEndpoint(base_url: string, id: string): string {
  * @param id the id of the game whose updates to retrieve.
  * @returns the endpoint to use when querying for game updates.
  */
-function getGameEventsEndpoint(base_url: string, id: string, since?: Date): string {
+function getGameEventsEndpoint(base_url: string, id: string, since?: Epoch): string {
     let endpoint = `http://${base_url}/game/${id}/events`;
 
     if (since !== undefined) {
-        endpoint += `?${new URLSearchParams({"since": since.getTime().toString()}).toString()}`
+        endpoint += `?${new URLSearchParams({"since": since.toString()}).toString()}`
     }
 
     return endpoint;
@@ -207,19 +207,19 @@ export class MinesweeperService {
      * @param since the earliest time you want to receive game event data from.
      * @returns a Promise with a list of the GameEvents.
      */
-    async getGameEvents(id: string, since?: Date): Promise<GameEvent[]> {
-        let response;
-
-        if (since !== undefined) {
-            response = await fetch(getGameEventsEndpoint(this.base_url, id, since));
-        } else {
-            response = await fetch(getGameEventsEndpoint(this.base_url, id));
-        }
+    async getGameEvents(id: string, since?: Epoch): Promise<GameEvent[]> {
+        let response = await fetch(getGameEventsEndpoint(this.base_url, id, since));
 
         let json = await response.json();
 
         let events: GameEvent[] = await json['events']
-            .map((event: any) => this._snakeToCamelObject(event));
+            .map((event: any) => {
+                event = this._snakeToCamelObject(event);
+                
+                event["occurredAt"] = parseFloat(event["occurredAt"]);
+
+                return this._snakeToCamelObject(event);
+            });
         
         return events;
     }
