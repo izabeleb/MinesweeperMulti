@@ -1,5 +1,5 @@
-import { Cell, CellStatus } from "../components/minesweeper/cell";
-import { GameEvent, GameData } from './types';
+import { Cell, CellStatus } from "../components/minesweeper/types";
+import { Epoch, GameEvent, GameData, IPage, } from './types';
 import _ from 'lodash';
 
 /**
@@ -64,8 +64,14 @@ function patchGameFieldEndpoint(base_url: string, id: string): string {
  * @param id the id of the game whose updates to retrieve.
  * @returns the endpoint to use when querying for game updates.
  */
-function getGameEventsEndpoint(base_url: string, id: string): string {
-    return `http://${base_url}/game/${id}/events`
+function getGameEventsEndpoint(base_url: string, id: string, since?: Epoch): string {
+    let endpoint = `http://${base_url}/game/${id}/events`;
+
+    if (since !== undefined) {
+        endpoint += `?${new URLSearchParams({"since": since.toString()}).toString()}`
+    }
+
+    return endpoint;
 }
 
 /**
@@ -76,16 +82,6 @@ function getGameEventsEndpoint(base_url: string, id: string): string {
  */
 function getServerHealthEndpoint(base_url: string): string {
     return `http://${base_url}/health`
-}
-
-/**
- * An abstraction around a page of data specifying the page number, the maximum
- * size of the data payload, and the payload.
- */
-export interface IPage<T> {
-    page: number,
-    size: number,
-    data: T[],
 }
 
 /**
@@ -109,8 +105,8 @@ export class MinesweeperService {
      * @param data the object to be converted.
      * @returns a JSON object with the key names converted to camel case.
      */
-    private _snakeToCamelObject(data: any) {
-        return _.mapKeys(data, (v, k) => _.camelCase(k))
+    private _snakeToCamelObject(data: any): any {
+        return _.mapKeys(data, (v, k) => _.camelCase(k));
     }
 
     /**
@@ -126,7 +122,7 @@ export class MinesweeperService {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
-              },
+            },
             body: JSON.stringify({
                 "width": width,
                 "height": height,
@@ -177,7 +173,7 @@ export class MinesweeperService {
         const json = await response.json();
 
         const cells: Cell[][] = await json['cells']
-            .map((row: Cell[]) => row.map((cell: Cell) => this._snakeToCamelObject(cell)));
+            .map((row: Cell[]) => row.map((cell: Cell) => this._snakeToCamelObject(cell) as Cell));
 
         return cells;
     }
@@ -191,7 +187,7 @@ export class MinesweeperService {
      * @param status the new status for  the cell.
      */
     async patchField(id: string, row: number, col: number, status: CellStatus) {
-        let response = await fetch(patchGameFieldEndpoint(this.base_url, id), {
+        await fetch(patchGameFieldEndpoint(this.base_url, id), {
             method: "PATCH",
             headers: {
                 'Content-Type': 'application/json'
@@ -211,23 +207,19 @@ export class MinesweeperService {
      * @param since the earliest time you want to receive game event data from.
      * @returns a Promise with a list of the GameEvents.
      */
-    async getGameEvents(id: string, since?: Date): Promise<GameEvent[]> {
-        let response;
-
-        if (since !== undefined) {
-            response = await fetch(getGameEventsEndpoint(this.base_url, id), {
-                body: JSON.stringify({
-                    'since': since.getUTCMilliseconds(),
-                })
-            });
-        } else {
-            response = await fetch(getGameEventsEndpoint(this.base_url, id));
-        }
+    async getGameEvents(id: string, since?: Epoch): Promise<GameEvent[]> {
+        let response = await fetch(getGameEventsEndpoint(this.base_url, id, since));
 
         let json = await response.json();
 
         let events: GameEvent[] = await json['events']
-            .map((event: any) => this._snakeToCamelObject(event));
+            .map((event: any) => {
+                event = this._snakeToCamelObject(event);
+                
+                event["occurredAt"] = parseFloat(event["occurredAt"]);
+
+                return this._snakeToCamelObject(event);
+            });
         
         return events;
     }

@@ -15,7 +15,7 @@ class CellStatus(str, Enum):
 class CellChange:
     row: int
     col: int
-    state: CellStatus
+    status: CellStatus
 
 
 @dataclass
@@ -27,7 +27,7 @@ class Cell:
 
     is_mine: bool = field(default=False, init=False)
 
-    state: CellStatus = field(default=CellStatus.Closed, init=False)
+    status: CellStatus = field(default=CellStatus.Closed, init=False)
 
     def __hash__(self):
         return self.get_coordinate().__hash__()

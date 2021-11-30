@@ -1,7 +1,8 @@
 import React from 'react';
-import { IPage, MinesweeperService } from '../api/api';
-import { GameData } from '../api/types';
-import { Cell, CellStatus } from './minesweeper/cell';
+import _ from 'lodash';
+import { MinesweeperService } from '../api/api';
+import { CellChange, Epoch, EventType, GameData, GameEvent } from '../api/types';
+import { Cell, CellStatus } from './minesweeper/types';
 import { MinefieldCommponent } from './minesweeper/minefield';
 
 interface GameProps {
@@ -9,30 +10,96 @@ interface GameProps {
   
     service: MinesweeperService,
 }
-  
+
 interface GameState {
-    cells?: Cell[][]
+    cells?: Cell[][],
+
+    isFlagMode: boolean,
+
+    isGameOver: boolean,
 }
 
+/**
+ * The interval in milliseconds to poll the backend server.
+ */
+const POLL_INTERVAL: number = 200;
+
 export class GameComponent extends React.Component<GameProps, GameState> {
-    service: MinesweeperService;
+    private intervalId?: NodeJS.Timeout;
+    private lastEventOccurence?: Epoch;
   
     constructor(props: GameProps) {
-        super(props)
-  
-        this.service = props.service;
-      
-        this.state = {
+        super(props);
 
+        this.state = {
+            isFlagMode: false,
+            isGameOver: false, // todo: verify with rest call
         }
     }
 
+    updateCell = (row: number, col: number, status: CellStatus) => {
+        this.props.service.patchField(this.props.gameData.id, row, col, status);
+    }
+
+    handleNewEvents(events: GameEvent[]) {
+        this.setState(previousState => {
+            let cells = previousState.cells;
+            let is_game_over: boolean = previousState.isGameOver;
+
+            if (cells !== undefined) {
+                console.log(cells);
+                
+                // cells = Object.assign({}, cells.map(row => Object.assign({}, row.map(cell => Object.assign({}, cell)))));
+                cells = _.cloneDeep(cells);
+
+                events.forEach(event => {                    
+                    switch (event.eventType) {
+                        case EventType.GameStart:
+                            // do nothing...
+                            break;
+                        case EventType.CellChange:
+                            let change: CellChange = event.event as CellChange;
+                            cells![change.row][change.col].status = change.status;
+                            
+                            break;
+                        case EventType.GameEnd:
+                            is_game_over = true;
+                            break;
+                    }
+                });
+                
+                if (events.length > 0) {
+                    this.lastEventOccurence = events[events.length - 1].occurredAt;
+                }
+            }
+
+            return { cells: cells, isGameOver: is_game_over }
+        });
+    }
+
     componentDidMount() {
-        this.service.getField(this.props.gameData.id)
-            .then(cells => this.setState({cells: cells}));
+        if (this.state.cells === undefined) {
+            this.props.service.getField(this.props.gameData.id)
+                .then(cells => this.setState({cells: cells}));
+        }
+
+        this.intervalId = setInterval(() => {
+            this.props.service.getGameEvents(this.props.gameData.id, this.lastEventOccurence).then(events => {
+                if (events.length !== 0) {
+                    this.lastEventOccurence = events[events.length - 1].occurredAt;
+                    this.handleNewEvents(events);
+                }
+            })
+        }, POLL_INTERVAL);
+    }
+
+    componentWillUnmount() {
+        if (this.intervalId !== undefined) {
+            clearInterval(this.intervalId);
+        }
     }
   
     render() {
-        return  <div>{ this.state.cells !== undefined ? <MinefieldCommponent cells={this.state.cells} /> : null }</div>
+        return  <div>{ this.state.cells !== undefined ? <MinefieldCommponent cellUpdater={this.updateCell} cells={this.state.cells} isFlagMode={this.state.isFlagMode} /> : null }</div>
     }
 }

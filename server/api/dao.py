@@ -59,11 +59,19 @@ class MemoryStore:
 
         return Page(page, size, games)
 
-    def set_cell_state(self, game_id: UUID, row: int, col: int, state: CellStatus):
+    def set_cell_state(self, game_id: UUID, row: int, col: int, state: CellStatus) -> Optional[bool]:
+        """Update teh status of a cell.
+
+        This method only has a return type to allow it to specify that no game was found.
+
+        todo: raise GameNotFoundError to remove the really smelly Optional[bool] return type
+        """
         if game_id not in self.games:
             return None
 
         semaphore, game = self.games[game_id]
 
         with semaphore:
-            return game.update_cell(row, col, state)
+            game.update_cell(row, col, state)
+
+        return True
