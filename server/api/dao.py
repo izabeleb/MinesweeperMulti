@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from minesweeper.game import MinesweeperGame
-from minesweeper.cell import CellState
+from minesweeper.cell import CellStatus
 
 from typing import Any, Optional
 
@@ -40,30 +40,45 @@ class MemoryStore:
     """
 
     def __init__(self):
+        self._lock = Semaphore()
         self.games: dict[UUID: (Semaphore, MinesweeperGame)] = dict()
 
     def add_game(self, game: MinesweeperGame):
-        self.games[game.id] = Semaphore(), game
+        with self._lock:
+            self.games[game.id] = Semaphore(), game
 
     def get_game(self, game_id: UUID) -> Optional[MinesweeperGame]:
         try:
-            _, game = self.games[game_id]
+            with self._lock:
+                _, game = self.games[game_id]
 
             return game
         except KeyError:
             return None
 
     def get_page(self, page: int, size: int) -> Page:
-        games = sorted(map(lambda t: t[1], self.games.values()),
-                       key=lambda game: game.created_at)[size * (page - 1): size * (page - 1) + size]
+        with self._lock:
+            games = sorted(map(lambda t: t[1], self.games.values()),
+                           key=lambda game: game.created_at)
 
-        return Page(page, size, games)
+            games = games[size * (page - 1): size * (page - 1) + size]
 
-    def set_cell_state(self, game_id: UUID, row: int, col: int, state: CellState):
+            return Page(page, size, games)
+
+    def set_cell_state(self, game_id: UUID, row: int, col: int, state: CellStatus) -> Optional[bool]:
+        """Update teh status of a cell.
+
+        This method only has a return type to allow it to specify that no game was found.
+
+        todo: raise GameNotFoundError to remove the really smelly Optional[bool] return type
+        """
         if game_id not in self.games:
             return None
 
-        semaphore, game = self.games[game_id]
+        with self._lock:
+            semaphore, game = self.games[game_id]
 
         with semaphore:
-            return game.update_cell(row, col, state)
+            game.update_cell(row, col, state)
+
+        return True

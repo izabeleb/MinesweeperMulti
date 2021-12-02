@@ -1,6 +1,6 @@
 import random
 
-from minesweeper.cell import Cell, CellState
+from minesweeper.cell import Cell, CellStatus
 
 
 class MineField:
@@ -60,6 +60,7 @@ class MineField:
         return cells
 
     def get_empty_connected(self, row: int, col: int) -> list[tuple[int, int]]:
+        """Retrieves a list of coordinates of cells which are empty, including the starting coordinate."""
         safe_coordinates: list[tuple[int, int]] = list()
         next_cells: set[Cell] = {self.cells[row][col]}
         visited_cells = set()
@@ -68,7 +69,7 @@ class MineField:
             cell = next_cells.pop()
             coordinate = cell.get_coordinate()
 
-            if cell.adjacent_mines == 0 and not cell.is_mine:
+            if not cell.is_mine:
                 safe_coordinates.append(coordinate)
 
                 next_cells |= {adjacent_cell for adjacent_cell in self._get_adjacent_cells(coordinate[0], coordinate[1])

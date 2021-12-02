@@ -7,7 +7,7 @@ from api.requests import (
 )
 
 from minesweeper.game import MinesweeperGame, EventType, GameEvent
-from minesweeper.cell import CellState, CellChange
+from minesweeper.cell import CellStatus, CellChange
 
 from api.dao import MemoryStore
 
@@ -25,7 +25,7 @@ class MinesweeperService:
         self._store.add_game(game)
         response = PostGameResponse(game.id)
 
-        game.events.append(GameEvent(EventType.GameStart, {}))
+        game.events.append(GameEvent(EventType.GameStart, None))
 
         return response
 
@@ -44,16 +44,14 @@ class MinesweeperService:
 
         return response
 
-    def update_game(self, request: UpdateGameFieldRequest) -> Optional[UpdateGameFieldResponse]:
+    def update_game_field(self, request: UpdateGameFieldRequest) -> Optional[UpdateGameFieldResponse]:
         """Update the board state."""
         cell_change = request.cell_change
 
-        is_mine_hit = self._store.set_cell_state(request.id, cell_change.row, cell_change.col, cell_change.state)
-
-        if is_mine_hit is None:
+        if self._store.set_cell_state(request.id, cell_change.row, cell_change.col, cell_change.status) is None:
             return None
 
-        return UpdateGameFieldResponse(is_mine_hit)
+        return UpdateGameFieldResponse()
 
     def get_game_events(self, request: GetGameEventsRequest) -> Optional[GetGameEventsResponse]:
         response = self.get_game(GetGameRequest(request.id))
@@ -65,7 +63,7 @@ class MinesweeperService:
         since = request.since
 
         if since is not None:
-            events = list(filter(lambda event: event.occurred_at.timestamp() >= since.timestamp(), game.events))
+            events = list(filter(lambda event: event.occurred_at.timestamp() > since.timestamp(), game.events))
         else:
             events = game.events
 

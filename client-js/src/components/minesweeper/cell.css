@@ -1,0 +1,58 @@
+.open_cell_button {
+    box-shadow: inset -1px -1px #ffffff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+}
+
+.cell_button {
+    min-width: 0;
+    min-height: 0;
+
+    width: fit-content;
+    height: fit-content;
+}
+
+.cell_button {
+    width: 10;
+    height: 10;
+}
+
+.cell_icon {
+    margin: 10px;
+}
+
+
+/* Styles for open cell bodies */
+.cell_mine_count {
+    font-weight: bolder;
+}
+
+.open1 {
+    color: blue;
+}
+
+.open2 {
+    color: green;
+}
+
+.open3 {
+    color: red;
+}
+
+.open4 {
+    color: purple;
+}
+
+.open5 {
+    color: maroon;
+}
+
+.open6 {
+    color: turquoise;
+}
+
+.open7 {
+    color: black;
+}
+
+.open8 {
+    color: gray;
+}

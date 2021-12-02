@@ -29,7 +29,6 @@ class GetGameResponse:
 @dataclass(frozen=True)
 class UpdateGameFieldResponse:
     """Response to a field state update request."""
-    is_mine_hit: bool
 
 
 @dataclass(frozen=True)

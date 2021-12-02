@@ -3,6 +3,8 @@ from uuid import UUID
 import flask
 from flask import Flask
 
+from flask_cors import CORS
+
 from api.service import MemoryStore, MinesweeperService
 from api.requests import (
     PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest, GetGameEventsRequest, GetGameFieldRequest
@@ -26,20 +28,11 @@ class MinesweeperEncoder(flask.json.JSONEncoder):
 def create_app(store: Optional[MemoryStore] = None):
     app = Flask(__name__)
 
+    CORS(app)
+
     app.json_encoder = MinesweeperEncoder
 
     minesweeper_service = MinesweeperService(store)
-
-    @app.route("/games", methods=["GET"])
-    def get_games():
-        """Handle GET requests for all games."""
-        page: int = int(flask.request.args.get("page", 0))
-        size: int = int(flask.request.args.get("size", 10))
-
-        request = GetPageRequest(page, size)
-        response = minesweeper_service.get_game_page(request)
-
-        return flask.jsonify(response)
 
     @app.route("/games", methods=["POST"])
     def post_game():
@@ -56,6 +49,17 @@ def create_app(store: Optional[MemoryStore] = None):
             return flask.jsonify(response)
         except ValueError:  # todo: make errors types to allow for more specificity
             flask.abort(400)
+
+    @app.route("/games", methods=["GET"])
+    def get_games():
+        """Handle GET requests for all games."""
+        page: int = int(flask.request.args.get("page", 1))
+        size: int = int(flask.request.args.get("size", 10))
+
+        request = GetPageRequest(page, size)
+        response = minesweeper_service.get_game_page(request)
+
+        return flask.jsonify(response)
 
     @app.route("/game/<game_id>", methods=["GET"])
     def get_game(game_id: str):
@@ -87,20 +91,20 @@ def create_app(store: Optional[MemoryStore] = None):
         if body_json is None:
             flask.abort(400)
 
-        request = UpdateGameFieldRequest(id=UUID(game_id), cell_change=CellChange(**body_json["cell_change"]))
-        response = minesweeper_service.update_game(request)
+        request = UpdateGameFieldRequest(id=UUID(game_id), cell_change=CellChange(**body_json))
+        response = minesweeper_service.update_game_field(request)
 
         if response is None:
             flask.abort(404)
 
-        return flask.jsonify(response)
+        return "ok"
 
     @app.route("/game/<game_id>/events")
     def get_game_events(game_id: str):
-        body_json = flask.request.json
+        since = flask.request.args.get("since", None)
 
-        if body_json is not None and "since" in body_json:
-            request = GetGameEventsRequest(UUID(game_id), datetime.datetime.fromtimestamp(body_json["since"]))
+        if since is not None:
+            request = GetGameEventsRequest(UUID(game_id), datetime.datetime.fromtimestamp(float(since)))
         else:
             request = GetGameEventsRequest(UUID(game_id))
 
@@ -116,3 +120,8 @@ def create_app(store: Optional[MemoryStore] = None):
         return "ok"
 
     return app
+
+
+if __name__ == "__main__":
+    app = create_app()
+    app.run("localhost", 5000)

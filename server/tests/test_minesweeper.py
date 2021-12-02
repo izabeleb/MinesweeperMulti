@@ -127,28 +127,21 @@ class TestMineField(unittest.TestCase):
     def test_get_empty_connected_blocked(self):
         #     0 1 2 3
         #   ┌─────────┐
-        # 0 │ - - - 1 │
-        # 1 │ - - - 1 │
-        # 2 │ - 1 1 1 │
-        # 3 │ 1 1 - - │
+        # 0 │ 1 1 1 - │
+        # 1 │ 2 * 2 - │
+        # 2 │ 2 * 2 - │
+        # 3 │ 1 1 1 - │
         #   └─────────┘
 
-        self.mine_field.cells[0][3].adjacent_mines = 1
-
-        self.mine_field.cells[1][3].adjacent_mines = 1
-
-        self.mine_field.cells[2][1].adjacent_mines = 1
-        self.mine_field.cells[2][2].adjacent_mines = 1
-        self.mine_field.cells[2][3].adjacent_mines = 1
-
-        self.mine_field.cells[3][0].adjacent_mines = 1
-        self.mine_field.cells[3][1].adjacent_mines = 1
+        self.mine_field.set_mine(1, 1)
+        self.mine_field.set_mine(2, 1)
 
         actual = sorted(self.mine_field.get_empty_connected(0, 0))
         expected = sorted([
-            (0, 0), (0, 1), (0, 2),
-            (1, 0), (1, 1), (1, 2),
-            (2, 0)
+            (0, 0), (0, 1), (0, 2), (0, 3),
+            (1, 0),         (1, 2), (1, 3),
+            (2, 0),         (2, 2), (2, 3),
+            (3, 0), (3, 1), (3, 2), (3, 3),
         ])
 
         self.assertListEqual(expected, actual)
