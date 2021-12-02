@@ -27,7 +27,7 @@ export function GameRoute(props: GameRouteProps): JSX.Element {
                     setIsLoaded(true);
                 }
             )
-    }, []);
+    });
 
     if (error !== undefined) {
         return <p>ERROR: {error} </p>

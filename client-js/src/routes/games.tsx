@@ -8,7 +8,7 @@ interface GamesRouteProps {
 }
 
 export function GamesRoute(props: GamesRouteProps): JSX.Element {
-    let [searchParams, _] = useSearchParams();
+    let [searchParams] = useSearchParams();
     let page = searchParams.get("page");
     let size = searchParams.get("size");
 
@@ -30,7 +30,7 @@ export function GamesRoute(props: GamesRouteProps): JSX.Element {
                         setIsLoaded(error);
                     }
                 )
-    }, []);
+    });
 
     if (error !== undefined) {
         return <p>ERROR: {error}</p>

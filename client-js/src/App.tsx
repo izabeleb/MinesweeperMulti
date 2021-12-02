@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MinesweeperService } from './api/api';
-import { GameData } from './api/types';
-import { GameComponent } from './components/game';
 
 interface IProps {
     service: MinesweeperService,    

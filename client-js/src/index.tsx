@@ -11,18 +11,8 @@ import { GameRoute } from './routes/game';
 
 let service = new MinesweeperService("localhost:5000");
 
-service.createGame(10, 10, 4);
-service.createGame(10, 10, 10);
-
-async function sleep(ms: number) {
-    await new Promise(resolve => setTimeout(resolve, ms));
-}
-
-sleep(2000);
-
 const rootElement  = document.getElementById("root");
 
-// todo: add routes
 ReactDOM.render(
     <BrowserRouter>
         <Routes>
