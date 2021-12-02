@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { MinesweeperService } from '../api/api';
 import { GameData } from '../api/types';
 
@@ -33,7 +33,7 @@ export function GamesRoute(props: GamesRouteProps): JSX.Element {
     }, []);
 
     if (error !== undefined) {
-        return <p>ERROR: {error.toString()}</p>
+        return <p>ERROR: {error}</p>
     } else if (! isLoaded) {
         return <p>loading...</p>
     } else if (games.length === 0) {
@@ -41,7 +41,7 @@ export function GamesRoute(props: GamesRouteProps): JSX.Element {
     } else {
         return <ul>
             {
-                games.map((game: GameData, i:number) => <li key={i}>{JSON.stringify(game)}</li>)
+                games.map((game: GameData, i:number) => <li key={i}><Link to={`/game/${game.id}`}>{game.id}</Link></li>)
             }
         </ul>
     }

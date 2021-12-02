@@ -7,6 +7,7 @@ import '98.css';
 import './components/minesweeper/cell.css';
 import './components/minesweeper/minefield.css';
 import { GamesRoute } from './routes/games';
+import { GameRoute } from './routes/game';
 
 let service = new MinesweeperService("localhost:5000");
 
@@ -27,7 +28,7 @@ ReactDOM.render(
         <Routes>
             <Route path="/" element={<App service={service}/>} />
             <Route path="/games" element={<GamesRoute service={service} />} />
-            {/* <Route path="game/:id" /> */}
+            <Route path="game/:id" element={<GameRoute service={service} />} />
         </Routes>
     </BrowserRouter>,
     rootElement
