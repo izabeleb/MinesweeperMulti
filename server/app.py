@@ -53,7 +53,7 @@ def create_app(store: Optional[MemoryStore] = None):
     @app.route("/games", methods=["GET"])
     def get_games():
         """Handle GET requests for all games."""
-        page: int = int(flask.request.args.get("page", 0))
+        page: int = int(flask.request.args.get("page", 1))
         size: int = int(flask.request.args.get("size", 10))
 
         request = GetPageRequest(page, size)
