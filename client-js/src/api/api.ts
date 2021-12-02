@@ -15,13 +15,27 @@ function postGameEndpoint(base_url: string): string {
 /**
  * Retireve the endpoint to use when GETting a list of game pages.
  * 
+ * todo: rework to use [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
+ * 
  * @param base_url the base url for the endopint, typically a domain name.
  * @param page the page number for the quesary (1 based).
  * @param size the amount of reslts you expect to see per page.
  * @returs the endpoint to use when querying for game pages.
  */
-function getGamesEndpoint(base_url: string, page: number, size: number): string {
-    return `http://${base_url}/games?page=${page}&size=${size}`
+function getGamesEndpoint(base_url: string, page?: number, size?: number): string {
+    let endpoint = `http://${base_url}/games`
+
+    if (page !== undefined && size !== undefined) {
+        endpoint += `?page=${page}&size=${size}`
+    } else if (page !== undefined) {
+        endpoint += `?page=${page}`
+    } else if (size !== undefined) {
+        endpoint += `?size=${size}`
+    }
+
+    console.log('===', endpoint, '===');
+
+    return endpoint;
 }
 
 /**
@@ -142,7 +156,7 @@ export class MinesweeperService {
      * @param size the maximum size of the page.
      * @returns a Promise container the specified game data page.
      */
-    async getGames(page: number = 1, size: number = 10): Promise<IPage<GameData>> {
+    async getGames(page?: number, size?: number): Promise<IPage<GameData>> {
         const response = await fetch(getGamesEndpoint(this.base_url, page, size));
         const json = await response.json();
 
