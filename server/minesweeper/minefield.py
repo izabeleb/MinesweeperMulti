@@ -72,8 +72,9 @@ class MineField:
             if not cell.is_mine:
                 safe_coordinates.append(coordinate)
 
-                next_cells |= {adjacent_cell for adjacent_cell in self._get_adjacent_cells(coordinate[0], coordinate[1])
-                               if adjacent_cell not in visited_cells}
+                if cell.adjacent_mines == 0:
+                    next_cells |= {adjacent_cell for adjacent_cell in self._get_adjacent_cells(coordinate[0], coordinate[1])
+                                   if adjacent_cell not in visited_cells}
 
             visited_cells.add(cell)
 

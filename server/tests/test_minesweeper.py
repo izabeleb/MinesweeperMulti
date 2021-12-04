@@ -138,10 +138,17 @@ class TestMineField(unittest.TestCase):
 
         actual = sorted(self.mine_field.get_empty_connected(0, 0))
         expected = sorted([
-            (0, 0), (0, 1), (0, 2), (0, 3),
-            (1, 0),         (1, 2), (1, 3),
-            (2, 0),         (2, 2), (2, 3),
-            (3, 0), (3, 1), (3, 2), (3, 3),
+            (0, 0),
+        ])
+
+        self.assertListEqual(expected, actual)
+
+        actual = sorted(self.mine_field.get_empty_connected(0, 3))
+        expected = sorted([
+            (0, 2), (0, 3),
+            (1, 2), (1, 3),
+            (2, 2), (2, 3),
+            (3, 2), (3, 3),
         ])
 
         self.assertListEqual(expected, actual)
