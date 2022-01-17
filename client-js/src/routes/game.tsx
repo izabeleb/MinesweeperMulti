@@ -23,7 +23,7 @@ export function GameRoute(props: GameRouteProps): JSX.Element {
                     setIsLoaded(true);
                 },
                 error => {
-                    setError(error);
+                    setError(error.message);
                     setIsLoaded(true);
                 }
             )
