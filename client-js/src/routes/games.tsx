@@ -16,8 +16,8 @@ export function GamesRoute(props: GamesRouteProps): JSX.Element {
     let [games, setGames] = useState<GameData[]>([]);
     let [isLoaded, setIsLoaded] = useState<boolean>(false);
 
+    // We only want this to run once so we don't watch any dependency values for updates
     useEffect(() => {
-        console.log()
         props.service.getGames(
             page !== null ? parseInt(page) : undefined,
             size !== null ? parseInt(size) : undefined)
@@ -31,7 +31,8 @@ export function GamesRoute(props: GamesRouteProps): JSX.Element {
                         setIsLoaded(true);
                     }
                 )
-    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (error !== undefined) {
         return <p>ERROR: {error}</p>
