@@ -33,8 +33,6 @@ function getGamesEndpoint(base_url: string, page?: number, size?: number): strin
         endpoint += `?size=${size}`
     }
 
-    console.log('===', endpoint, '===');
-
     return endpoint;
 }
 
@@ -76,6 +74,7 @@ function patchGameFieldEndpoint(base_url: string, id: string): string {
  * 
  * @param base_url the base url for the endopint, typically a domain name.
  * @param id the id of the game whose updates to retrieve.
+ * @param since the time sience th epoch of the last received event.
  * @returns the endpoint to use when querying for game updates.
  */
 function getGameEventsEndpoint(base_url: string, id: string, since?: Epoch): string {
