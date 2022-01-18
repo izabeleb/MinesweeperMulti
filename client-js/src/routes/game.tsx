@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { MinesweeperService } from '../api/api';
 import { GameData } from '../api/types';
 import { GameComponent } from '../components/game';
+import { Link } from 'react-router-dom';
 
 interface GameRouteProps {
     service: MinesweeperService,
@@ -34,7 +35,16 @@ export function GameRoute(props: GameRouteProps): JSX.Element {
     } else if (! isLoaded) {
         return <p>loading...</p>
     } else if (gameData !== undefined) {
-        return <GameComponent service={props.service} gameData={gameData} />
+        return (
+          <div>
+          <div className="menu">
+          <Link className="menu-header" to="/">MultiMine</Link>
+          </div>
+          <div className="minefield-wrapper">
+        <GameComponent service={props.service} gameData={gameData} />
+        </div>
+        </div>
+      )
     } else {
         throw new Error("game should not be undefined");
     }
