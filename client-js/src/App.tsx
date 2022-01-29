@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { MinesweeperService } from './api/api';
 
 interface IProps {
-    service: MinesweeperService,    
+    service: MinesweeperService,
 }
 
 interface IState {
@@ -21,6 +21,13 @@ export class App extends React.Component<IProps, IState> {
     }
 
     render() {
-        return <Link to="/games">Games</Link>
+        return (
+          <div className="menu">
+          <p className="menu-header-no-hover">MultiMine</p>
+          <Link className="menu-item" to="/newgame">New Game</Link>
+          <br/>
+          <Link className="menu-item" to="/games">Current Games</Link>
+          </div>
+        )
     }
 }

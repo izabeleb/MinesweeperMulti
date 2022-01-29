@@ -4,10 +4,11 @@ import { MinesweeperService } from '../api/api';
 import { CellChange, Epoch, EventType, GameData, GameEvent } from '../api/types';
 import { Cell, CellStatus } from './minesweeper/types';
 import { MinefieldCommponent } from './minesweeper/minefield';
+//import { GamebarComponent } from './minesweeper/gamebar';
 
 interface GameProps {
     gameData: GameData,
-  
+
     service: MinesweeperService,
 }
 
@@ -27,7 +28,7 @@ const POLL_INTERVAL: number = 200;
 export class GameComponent extends React.Component<GameProps, GameState> {
     private intervalId?: NodeJS.Timeout;
     private lastEventOccurence?: Epoch;
-  
+
     constructor(props: GameProps) {
         super(props);
 
@@ -49,7 +50,7 @@ export class GameComponent extends React.Component<GameProps, GameState> {
             if (cells !== undefined) {
                 cells = _.cloneDeep(cells);
 
-                events.forEach(event => {                    
+                events.forEach(event => {
                     switch (event.eventType) {
                         case EventType.GameStart:
                             // do nothing...
@@ -57,14 +58,14 @@ export class GameComponent extends React.Component<GameProps, GameState> {
                         case EventType.CellChange:
                             let change: CellChange = event.event as CellChange;
                             cells![change.row][change.col].status = change.status;
-                            
+
                             break;
                         case EventType.GameEnd:
                             is_game_over = true;
                             break;
                     }
                 });
-                
+
                 if (events.length > 0) {
                     this.lastEventOccurence = events[events.length - 1].occurredAt;
                 }
@@ -95,8 +96,13 @@ export class GameComponent extends React.Component<GameProps, GameState> {
             clearInterval(this.intervalId);
         }
     }
-  
+
     render() {
-        return  <div>{ this.state.cells !== undefined ? <MinefieldCommponent cellUpdater={this.updateCell} cells={this.state.cells} isFlagMode={this.state.isFlagMode} /> : null }</div>
+        return  <div>
+
+          <div className="minefield-scroll">
+          { this.state.cells !== undefined ? <MinefieldCommponent cellUpdater={this.updateCell} cells={this.state.cells} isFlagMode={this.state.isFlagMode} /> : null }
+          </div>
+        </div>
     }
 }

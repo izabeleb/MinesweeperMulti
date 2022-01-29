@@ -4,7 +4,7 @@ import _ from 'lodash';
 
 /**
  * Retrieve the endpoint for POSTing a new game.
- * 
+ *
  * @param base_url the base url for the endopint, typically a domain name.
  * @returns the endpoint to use when creating a new game.
  */
@@ -14,9 +14,9 @@ function postGameEndpoint(base_url: string): string {
 
 /**
  * Retireve the endpoint to use when GETting a list of game pages.
- * 
+ *
  * todo: rework to use [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)
- * 
+ *
  * @param base_url the base url for the endopint, typically a domain name.
  * @param page the page number for the quesary (1 based).
  * @param size the amount of reslts you expect to see per page.
@@ -38,7 +38,7 @@ function getGamesEndpoint(base_url: string, page?: number, size?: number): strin
 
 /**
  * Retrieve the endpoint to use when GETting a specific game.
- * 
+ *
  * @param base_url the base url for the endopint, typically a domain name.
  * @param id the id of game to retrieve.
  * @returns the endpoint to use when querying for a specific game.
@@ -49,7 +49,7 @@ function getGameEndpoint(base_url: string, id: string): string {
 
 /**
  * Retrieve the endpoint to use when GETting a field for a specific game.
- * 
+ *
  * @param base_url the base url for the endopint, typically a domain name.
  * @param id the id of game to retrieve.
  * @returns the endpoint to use when querying for a field for a specific game.
@@ -60,7 +60,7 @@ function getGameFieldEndpoint(base_url: string, id: string): string {
 
 /**
  * Retrieve the endpoint to use when PATCHing a field for a specific game.
- * 
+ *
  * @param base_url the base url for the endopint, typically a domain name.
  * @param id the id of game to retrieve.
  * @returns the endpoint to use when patching a field for a specific game.
@@ -71,7 +71,7 @@ function patchGameFieldEndpoint(base_url: string, id: string): string {
 
 /**
  * Retrieve the endpoint to use when GETting game events.
- * 
+ *
  * @param base_url the base url for the endopint, typically a domain name.
  * @param id the id of the game whose updates to retrieve.
  * @param since the time sience th epoch of the last received event.
@@ -89,7 +89,7 @@ function getGameEventsEndpoint(base_url: string, id: string, since?: Epoch): str
 
 /**
  * Retrieve teh endpoint to use when checking the target server's health.
- * 
+ *
  * @param base_url the base url for the endopint, typically a domain name.
  * @returns the endpoint to use when querying teh server's health status.
  */
@@ -100,7 +100,7 @@ function getServerHealthEndpoint(base_url: string): string {
 /**
  * A service abstraction allowing for a clean interface to the MinesweeperMutli
  * RESTful API.
- * 
+ *
  * todo: not complete (missing some api endpoint functionality, mostly dealing
  *       with field updates)
  */
@@ -114,7 +114,7 @@ export class MinesweeperService {
     /**
      * Utility to convert a snake cased JSON object to a camel cased JSON object:
      *   { 'is_mine': true } -> { 'isMine': true }
-     * 
+     *
      * @param data the object to be converted.
      * @returns a JSON object with the key names converted to camel case.
      */
@@ -123,8 +123,25 @@ export class MinesweeperService {
     }
 
     /**
+     * Utility to convert a snake cased JSON object to a camel cased JSON object:
+     *   { 'is_mine': true } -> { 'isMine': true }
+     *
+     * @param data the object to be converted.
+     * @returns a JSON object with the key names converted to camel case.
+     */
+    private _snakeToCamelObjectPage(page: IPage<GameData>): IPage<GameData>
+    {
+        let data = page.data;
+        for (let i=0; i < data.length; i++){
+          data[i] = this._snakeToCamelObject(data[i]);
+        }
+        //console.log(data);
+        page.data = data;
+        return page;
+    }
+    /**
      * Create a new game.
-     * 
+     *
      * @param width the width of the game field.
      * @param height the height of the game field.
      * @param mineCount the amount fo mines to be populated in the field.
@@ -150,7 +167,7 @@ export class MinesweeperService {
 
     /**
      * Retrieve a list of games packaged in an IPage.
-     * 
+     *
      * @param page the pages number to retrieve.
      * @param size the maximum size of the page.
      * @returns a Promise container the specified game data page.
@@ -158,13 +175,12 @@ export class MinesweeperService {
     async getGames(page?: number, size?: number): Promise<IPage<GameData>> {
         const response = await fetch(getGamesEndpoint(this.base_url, page, size));
         const json = await response.json();
-
-        return this._snakeToCamelObject(json['page']) as IPage<GameData>
+        return this._snakeToCamelObjectPage(json['page']) as IPage<GameData>;
     }
 
     /**
      * Get a specific game by id.
-     * 
+     *
      * @param id the id of the target game.
      * @returns the game withthe specified id if it exists.
      */
@@ -177,7 +193,7 @@ export class MinesweeperService {
 
     /**
      * Get a specific game field by id.
-     * 
+     *
      * @param id the of game fo the target field.
      * @returns a list of the cells in a game field.
      */
@@ -193,7 +209,7 @@ export class MinesweeperService {
 
     /**
      * Send a field update to teh server.
-     * 
+     *
      * @param id the id of the game whose field you are updating.
      * @param row the row of the targe cell.
      * @param col the column of the target cell.
@@ -215,7 +231,7 @@ export class MinesweeperService {
 
     /**
      * Get a list of events whicih have occurred since a current time.
-     * 
+     *
      * @param id the id of the game.
      * @param since the earliest time you want to receive game event data from.
      * @returns a Promise with a list of the GameEvents.
@@ -228,23 +244,23 @@ export class MinesweeperService {
         let events: GameEvent[] = await json['events']
             .map((event: any) => {
                 event = this._snakeToCamelObject(event);
-                
+
                 event["occurredAt"] = parseFloat(event["occurredAt"]);
 
                 return this._snakeToCamelObject(event);
             });
-        
+
         return events;
     }
 
     /**
      * Check the status of the target MinesweeperMulti server.
-     * 
+     *
      * @returns a Promise container true if the server is healthy, and false is unhealthy.
      */
     async getHealth(): Promise<boolean> {
         let response = await fetch(getServerHealthEndpoint(this.base_url));
-        
+
         return response.ok
     }
 }
