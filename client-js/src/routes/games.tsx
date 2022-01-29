@@ -34,7 +34,6 @@ export function GamesRoute(props: GamesRouteProps): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-
     if (error !== undefined) {
         return <p>ERROR: {error}</p>
     } else if (! isLoaded) {
@@ -52,7 +51,12 @@ export function GamesRoute(props: GamesRouteProps): JSX.Element {
           <div className="menu">
           <Link className="menu-header" to="/">MultiMine</Link><br/><br/>
             {
-                games.map((game: GameData, i:number) => <p key={i}><Link className="menu-item" to={`/game/${game.id}`}>Minesweeper Game {i + 1}: {game.height} X {game.width} ({game.mineCount} mines) - Started at: {new Date(game.createdAt as any * 1000).toString()} </Link></p>)
+                games.map((game: GameData, i:number) => (
+                        <p key={i}>
+                            <Link className="menu-item" to={`/game/${game.id}`}>Minesweeper Game {i + 1}: {game.height} X {game.width} ({game.mineCount} mines) - Started at: {new Date(game.createdAt as any * 1000).toString()}</Link>
+                            </p>
+                    )
+                )
             }
         </div>
       )

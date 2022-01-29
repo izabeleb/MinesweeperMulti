@@ -19,7 +19,7 @@ ReactDOM.render(
         <Routes>
             <Route path="/" element={<App service={service}/>} />
             <Route path="/games" element={<GamesRoute service={service} />} />
-            <Route path="game/:id" element={<GameRoute service={service} />} />
+            <Route path="/game/:id" element={<GameRoute service={service} />} />
             <Route path="/newgame" element={<NewgameRoute service={service} />} />
         </Routes>
     </BrowserRouter>,

@@ -43,7 +43,7 @@ function getGamesEndpoint(base_url: string, page?: number, size?: number): strin
  * @param id the id of game to retrieve.
  * @returns the endpoint to use when querying for a specific game.
  */
-function getGameEndpoint(base_url: string, id: string): string {
+export function getGameEndpoint(base_url: string, id: string): string {
     return `http://${base_url}/game/${id}`
 }
 
