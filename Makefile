@@ -1,8 +1,5 @@
 DIST = dist
 
-server_wheel = ${dist_dir}/minesweeper-multi-server.whl
-client-tar = ${dist_dir}/minesweeper-multi-client-js.tar.gz
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Simple help recipe                                                          #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -12,9 +9,10 @@ help:
 	@echo 'USAGE: make TARGET [VARS...]'
 	@echo
 	@echo 'Targets:'
+	@echo '  all          build all docker images'
+	@echo '  client-js    build docker image for the javascript client'
+	@echo '  server       build docker image for the server'
 	@echo '  clean        remove all project or build generated files'
-	@echo '  client-js    build source and docker file for the javascript client'
-	@echo '  server       build the source and dockerfile for the server'
 	@echo
 	@echo 'Variables:'
 	@echo '  DIST    the path where distrobution files should be stored.'
@@ -26,26 +24,17 @@ ${DIST}:
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Recipes for docker images                                                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-.PHONY: docker-client-js docker-server
+.PHONY: all client-js server
 
-client-js: ${server_wheel}
-	docker build --file docker/client/Dockerfile ${DIST}
+all: server client-js
 
-server:: ${client-tar}
-	docker build --file docker/server/Dockerfile ${DIST}
+server:
+	make --directory server docker
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Recipes for source builds                                                   #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-${server_wheel}:
-	@echo '=== [server_wheel] ==='
-
-${client_tar}:
-	@echo '=== [client_tar] ==='
+client-js:
+	make --directory client-js docker
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Recipes for source builds                                                   #
+# Recipes for cleanup                                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 clean:
-	rm --recursive ${dist_dir}
-	find . -name __pycache__ -exec rm --recursive '{}' +

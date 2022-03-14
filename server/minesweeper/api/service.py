@@ -1,15 +1,14 @@
-from api.responses import (
+from minesweeper.api.responses import (
     PostGameResponse, GetPageResponse, GetGameResponse, UpdateGameFieldResponse, GetGameEventsResponse,
     GetGameFieldResponse
 )
-from api.requests import (
+from minesweeper.api.requests import (
     PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest, GetGameEventsRequest, GetGameFieldRequest
 )
 
 from minesweeper.game import MinesweeperGame, EventType, GameEvent
-from minesweeper.cell import CellStatus, CellChange
 
-from api.dao import MemoryStore
+from minesweeper.api.dao import MemoryStore
 
 from typing import Optional
 

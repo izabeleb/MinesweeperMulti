@@ -2,8 +2,8 @@ import app
 
 import unittest
 
-from api.service import MinesweeperService, MemoryStore
-from api.requests import *
+from minesweeper.api.service import MinesweeperService, MemoryStore
+from minesweeper.api.requests import *
 
 from minesweeper.game import MinesweeperGame, GameEvent, EventType
 from minesweeper.cell import CellStatus
