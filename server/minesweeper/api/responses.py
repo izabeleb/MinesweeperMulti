@@ -3,7 +3,7 @@ from minesweeper.cell import Cell
 
 from dataclasses import dataclass
 
-from api.dao import Page
+from minesweeper.api.dao import Page
 
 from uuid import UUID
 
