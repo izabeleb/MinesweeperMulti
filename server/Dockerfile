@@ -1,8 +1,6 @@
-FROM python:3.10-alpine3.15 as builder
+FROM python:3.10-alpine3.15
 
-RUN mkdir /app
-COPY /app.py /requirements.txt /app/
-COPY /minesweeper /app/minesweeper
+COPY / /app
 
 RUN pip install --requirement /app/requirements.txt \
     && rm /app/requirements.txt
