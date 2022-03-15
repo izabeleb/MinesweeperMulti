@@ -1,5 +1,3 @@
-import app
-
 import unittest
 
 from minesweeper.api.service import MinesweeperService, MemoryStore
@@ -8,6 +6,8 @@ from minesweeper.api.requests import *
 from minesweeper.game import MinesweeperGame, GameEvent, EventType
 from minesweeper.cell import CellStatus
 
+import minesweeper.run as run
+
 import uuid
 from uuid import UUID
 
@@ -15,14 +15,14 @@ import json
 
 
 def _to_json_dict(obj):
-    return json.loads(json.dumps(obj, cls=app.MinesweeperEncoder))
+    return json.loads(json.dumps(obj, cls=run.MinesweeperEncoder))
 
 
 class BaseWrapper:
     class BaseGameTest(unittest.TestCase):
         def setUp(self):
             self._store = MemoryStore()
-            self._client = app.create_app(self._store).test_client()
+            self._client = run.create_app(self._store).test_client()
             self._service = MinesweeperService(self._store)
 
 
@@ -157,23 +157,7 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
                     self.fail("all cells should be open")
 
         actual = [event.event_type for event in self._game.events]
-        expected = [EventType.GameStart] + [EventType.CellChange] * 16
-
-        self.assertListEqual(expected, actual)
-
-    def test_open_mine(self):
-        self._minefield.cells[0][0].is_mine = True
-
-        self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
-            "status": CellStatus.Opened,
-        })
-
-        response = self._service.get_game_events(GetGameEventsRequest(self._game_id))
-
-        actual = [event.event_type for event in response.events]
-        expected = [EventType.GameStart, EventType.CellChange, EventType.GameEnd]
+        expected = [EventType.GameStart] + [EventType.CellChange] * 16 + [EventType.GameWin]
 
         self.assertListEqual(expected, actual)
 
@@ -265,6 +249,41 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
 
         self.assertListEqual(expected, actual)
 
+    def test_win(self):
+        self._minefield.cells[3][3].is_mine = True
+
+        self._client.patch(f"/game/{self._game_id}/field", json={
+            "row": 0,
+            "col": 0,
+            "status": CellStatus.Opened,
+        })
+
+        response = self._service.get_game_events(GetGameEventsRequest(self._game_id))
+
+        actual = [event.event_type for event in response.events]
+        expected = [EventType.GameStart] + [EventType.CellChange] * 15 + [EventType.GameWin]
+
+        print(len(actual), actual)
+        print(len(expected), expected)
+
+        self.assertListEqual(expected, actual)
+
+    def test_loss(self):
+        self._minefield.cells[0][0].is_mine = True
+
+        self._client.patch(f"/game/{self._game_id}/field", json={
+            "row": 0,
+            "col": 0,
+            "status": CellStatus.Opened,
+        })
+
+        response = self._service.get_game_events(GetGameEventsRequest(self._game_id))
+
+        actual = [event.event_type for event in response.events]
+        expected = [EventType.GameStart, EventType.CellChange, EventType.GameLoss]
+
+        self.assertListEqual(expected, actual)
+
 
 class TestGameEvents(BaseWrapper.BaseGameTest):
     def setUp(self):
@@ -277,7 +296,7 @@ class TestGameEvents(BaseWrapper.BaseGameTest):
 
         self._events.append(GameEvent(EventType.GameStart, None))
         self._events.append(GameEvent(EventType.CellChange, CellChange(0, 0, CellStatus.Opened)))
-        self._events.append(GameEvent(EventType.GameEnd, None))
+        self._events.append(GameEvent(EventType.GameWin, None))
 
         self._start_time = self._events[0].occurred_at
         self._middle_time = self._events[len(self._events) // 2].occurred_at

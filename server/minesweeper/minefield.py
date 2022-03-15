@@ -72,3 +72,25 @@ class MineField:
 
             for cell in self._get_adjacent_cells(row, col):
                 cell.adjacent_mines += 1
+
+    def get_closed_mines(self) -> list[tuple[int, int]]:
+        """Get a list of the locations any closed cells which are mines."""
+        locations: list[tuple[int, int]] = list()
+
+        for i in range(self.rows):
+            for j in range(self.cols):
+                cell = self.cells[i][j]
+
+                if cell.is_mine:
+                    locations.append((cell.row, cell.col))
+
+        return locations
+
+    def is_field_clear(self) -> bool:
+        """Determine if the MineField is clear (all non-mine cells are opened)."""
+        for i in range(self.rows):
+            for j in range(self.cols):
+                cell = self.cells[i][j]
+                if not cell.is_mine and cell.status != CellStatus.Opened:
+                    return False
+        return True
