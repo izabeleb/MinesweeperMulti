@@ -28,7 +28,7 @@ class MineField:
             row = flat_coordinate // self.rows
             col = flat_coordinate % self.cols
 
-            self.cells[row][col].is_mine = True
+            self.set_mine(row, col)
 
     def _get_adjacent_cells(self, row: int, col: int) -> list[Cell]:
         cells = list()
