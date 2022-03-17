@@ -11,13 +11,18 @@ export interface GameData {
 export enum EventType {
     GameStart = "game_start",
     CellChange = "cell_change",
-    GameEnd = "game_end",
+    GameWin = "game_win",
+    GameLoss = "game_loss",
 }
 
 export interface CellChange {
     row: number,
     col: number,
     status: CellStatus,
+}
+
+export interface GameLossData {
+    closedMines: number[][] // todo: we probably want to make a "Coordiante" type here (will need to match on the backend)
 }
 
 /**
@@ -41,3 +46,4 @@ export interface GameEvent {
     size: number,
     data: T[],
 }
+
