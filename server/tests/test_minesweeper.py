@@ -136,7 +136,7 @@ class TestMineField(unittest.TestCase):
         #   └─────────┘
 
         actual = sorted(self.mine_field.get_empty_connected(Coordinate(0, 0)))
-        expected = sorted(list(itertools.chain(*[[(i, j) for j in range(self.cols)] for i in range(self.rows)])))
+        expected = sorted(list(itertools.chain(*[[Coordinate(i, j) for j in range(self.cols)] for i in range(self.rows)])))
 
         self.assertListEqual(expected, actual)
 
@@ -154,17 +154,17 @@ class TestMineField(unittest.TestCase):
 
         actual = sorted(self.mine_field.get_empty_connected(Coordinate(0, 0)))
         expected = sorted([
-            (0, 0),
+            Coordinate(0, 0),
         ])
 
         self.assertListEqual(expected, actual)
 
         actual = sorted(self.mine_field.get_empty_connected(Coordinate(0, 3)))
         expected = sorted([
-            (0, 2), (0, 3),
-            (1, 2), (1, 3),
-            (2, 2), (2, 3),
-            (3, 2), (3, 3),
+            Coordinate(0, 2), Coordinate(0, 3),
+            Coordinate(1, 2), Coordinate(1, 3),
+            Coordinate(2, 2), Coordinate(2, 3),
+            Coordinate(3, 2), Coordinate(3, 3),
         ])
 
         self.assertListEqual(expected, actual)

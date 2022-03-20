@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 import enum
 from enum import Enum
 
+from typing import Any
+
 
 @dataclass
 class Coordinate:
@@ -12,6 +14,12 @@ class Coordinate:
 
     def __hash__(self):
         return hash((self.row, self.col))
+
+    def __lt__(self, other: Any):
+        if not isinstance(other, Coordinate):
+            raise TypeError(f"'<' not supported between instances of 'Coordinate' and '{type(other)}'")
+
+        return (self.row, self.col) < (other.row, other.col)
 
 
 @enum.unique
