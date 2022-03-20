@@ -1,10 +1,9 @@
 import React from 'react';
 import _ from 'lodash';
 import { MinesweeperService } from '../api/api';
-import { CellChange, Epoch, EventType, GameData, GameEvent } from '../api/types';
+import { CellChange, Coordinate, Epoch, EventType, GameData, GameEvent } from '../api/types';
 import { Cell, CellStatus } from './minesweeper/types';
 import { MinefieldCommponent } from './minesweeper/minefield';
-//import { GamebarComponent } from './minesweeper/gamebar';
 
 interface GameProps {
     gameData: GameData,
@@ -41,8 +40,8 @@ export class GameComponent extends React.Component<GameProps, GameState> {
         }
     }
 
-    updateCell = (row: number, col: number, status: CellStatus) => {
-        this.props.service.patchField(this.props.gameData.id, row, col, status);
+    updateCell = (coordinate: Coordinate, status: CellStatus) => {
+        this.props.service.patchField(this.props.gameData.id, coordinate, status);
     }
 
     handleNewEvents(events: GameEvent[]) {
@@ -59,7 +58,7 @@ export class GameComponent extends React.Component<GameProps, GameState> {
                             break;
                         case EventType.CellChange:
                             let change: CellChange = event.event as CellChange;
-                            cells![change.row][change.col].status = change.status;
+                            cells![change.coordinate.row][change.coordinate.col].status = change.status;
 
                             break;
                         case EventType.GameWin:

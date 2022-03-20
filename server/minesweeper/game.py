@@ -8,7 +8,7 @@ import datetime
 import uuid
 from uuid import UUID
 
-from minesweeper.cell import CellStatus, CellChange
+from minesweeper.cell import CellStatus, CellChange, Coordinate
 from minesweeper.minefield import MineField
 
 from typing import Any
@@ -54,30 +54,30 @@ class MinesweeperGame:
         self.minefield = MineField(self.height, self.width, self.mine_count)
         self.events: list[GameEvent] = list()
 
-    def update_cell(self, row: int, col: int, status: CellStatus):
-        cell = self.minefield.cells[row][col]
+    def update_cell(self, coordinate: Coordinate, status: CellStatus):
+        cell = self.minefield.get_cell(coordinate)
 
         if status == CellStatus.Flagged:
             if cell.status == CellStatus.Closed:
                 cell.status = CellStatus.Flagged
-                self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, CellStatus.Flagged)))
+                self.events.append(GameEvent(EventType.CellChange, CellChange(coordinate, CellStatus.Flagged)))
 
         elif status == CellStatus.Opened:
             if cell.status == CellStatus.Closed:
                 if cell.is_mine:
-                    self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, CellStatus.Opened)))
+                    self.events.append(GameEvent(EventType.CellChange, CellChange(coordinate, CellStatus.Opened)))
                     self.events.append(GameEvent(EventType.GameLoss, GameLossData(self.minefield.get_closed_mines())))
                 else:
                     if cell.adjacent_mines == 0:
-                        for coordinate in self.minefield.get_empty_connected(row, col):
-                            empty_cell = self.minefield.cells[coordinate[0]][coordinate[1]]
+                        for adjacent_coordinate in self.minefield.get_empty_connected(coordinate):
+                            empty_cell = self.minefield.get_cell(adjacent_coordinate)
 
                             empty_cell.status = CellStatus.Opened
                             self.events.append(GameEvent(EventType.CellChange,
-                                                         CellChange(coordinate[0], coordinate[1], CellStatus.Opened)))
+                                                         CellChange(adjacent_coordinate, CellStatus.Opened)))
                     else:
                         cell.status = CellStatus.Opened
-                        self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, CellStatus.Opened)))
+                        self.events.append(GameEvent(EventType.CellChange, CellChange(coordinate, CellStatus.Opened)))
 
                     if self.minefield.is_field_clear():
                         self.events.append(GameEvent(EventType.GameWin, None))
@@ -85,7 +85,7 @@ class MinesweeperGame:
         elif status == CellStatus.Closed:
             if cell.status == CellStatus.Flagged:
                 cell.status = CellStatus.Closed
-                self.events.append(GameEvent(EventType.CellChange, CellChange(row, col, CellStatus.Closed)))
+                self.events.append(GameEvent(EventType.CellChange, CellChange(coordinate, CellStatus.Closed)))
 
         else:
             raise ValueError(f"unsupported cell state '{status}'")

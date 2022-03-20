@@ -3,10 +3,11 @@ import unittest
 from minesweeper.api.service import MinesweeperService, MemoryStore
 from minesweeper.api.requests import *
 
+from minesweeper import MinesweeperEncoder
 from minesweeper.game import MinesweeperGame, GameEvent, EventType
-from minesweeper.cell import CellStatus
+from minesweeper.cell import CellStatus, Coordinate
 
-import minesweeper.run as run
+import app
 
 import uuid
 from uuid import UUID
@@ -15,14 +16,14 @@ import json
 
 
 def _to_json_dict(obj):
-    return json.loads(json.dumps(obj, cls=run.MinesweeperEncoder))
+    return json.loads(json.dumps(obj, cls=MinesweeperEncoder))
 
 
 class BaseWrapper:
     class BaseGameTest(unittest.TestCase):
         def setUp(self):
             self._store = MemoryStore()
-            self._client = run.create_app(self._store).test_client()
+            self._client = app.create_app(self._store).test_client()
             self._service = MinesweeperService(self._store)
 
 
@@ -137,8 +138,10 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
 
     def test_update_non_existent_game(self):
         response = self._client.patch(f"/game/{uuid.uuid4()}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Opened,
         })
 
@@ -146,8 +149,10 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
 
     def test_open_empty(self):
         self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Opened,
         })
 
@@ -165,20 +170,26 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
         self._minefield.cells[0][0].status = CellStatus.Flagged
 
         self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Opened,
         })
 
         self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Flagged,
         })
 
         self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Closed,
         })
 
@@ -193,20 +204,26 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
         self._minefield.cells[0][0].status = CellStatus.Opened
 
         self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Closed,
         })
 
         self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Opened,
         })
 
         self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Flagged,
         })
 
@@ -221,8 +238,10 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
         # see TestUpdateGame.test_hist_empty for changing the status of a closed
         # cell to open in a minefield with no mines
         self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Flagged,
         })
 
@@ -234,11 +253,13 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
         self.assertListEqual(expected, actual)
 
     def test_open_numbered_cell(self):
-        self._minefield.set_mine(1, 1)
+        self._minefield.set_mine(Coordinate(1, 1))
 
         self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Opened,
         })
 
@@ -253,8 +274,10 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
         self._minefield.cells[3][3].is_mine = True
 
         self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Opened,
         })
 
@@ -263,17 +286,16 @@ class TestUpdateGame(BaseWrapper.BaseGameTest):
         actual = [event.event_type for event in response.events]
         expected = [EventType.GameStart] + [EventType.CellChange] * 15 + [EventType.GameWin]
 
-        print(len(actual), actual)
-        print(len(expected), expected)
-
         self.assertListEqual(expected, actual)
 
     def test_loss(self):
         self._minefield.cells[0][0].is_mine = True
 
         self._client.patch(f"/game/{self._game_id}/field", json={
-            "row": 0,
-            "col": 0,
+            "coordinate": {
+                "row": 0,
+                "col": 0,
+            },
             "status": CellStatus.Opened,
         })
 
@@ -295,7 +317,7 @@ class TestGameEvents(BaseWrapper.BaseGameTest):
         self._store.add_game(self._game)
 
         self._events.append(GameEvent(EventType.GameStart, None))
-        self._events.append(GameEvent(EventType.CellChange, CellChange(0, 0, CellStatus.Opened)))
+        self._events.append(GameEvent(EventType.CellChange, CellChange(Coordinate(0, 0), CellStatus.Opened)))
         self._events.append(GameEvent(EventType.GameWin, None))
 
         self._start_time = self._events[0].occurred_at

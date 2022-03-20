@@ -5,6 +5,7 @@ from minesweeper.api.responses import (
 from minesweeper.api.requests import (
     PostGameRequest, GetGameRequest, UpdateGameFieldRequest, GetPageRequest, GetGameEventsRequest, GetGameFieldRequest
 )
+from minesweeper.cell import Coordinate
 
 from minesweeper.game import MinesweeperGame, EventType, GameEvent
 
@@ -46,8 +47,9 @@ class MinesweeperService:
     def update_game_field(self, request: UpdateGameFieldRequest) -> Optional[UpdateGameFieldResponse]:
         """Update the board state."""
         cell_change = request.cell_change
+        coordinate = Coordinate(cell_change.coordinate["row"], cell_change.coordinate["col"])
 
-        if self._store.set_cell_state(request.id, cell_change.row, cell_change.col, cell_change.status) is None:
+        if self._store.set_cell_state(request.id, coordinate, cell_change.status) is None:
             return None
 
         return UpdateGameFieldResponse()

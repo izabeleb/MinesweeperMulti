@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from minesweeper.game import MinesweeperGame
-from minesweeper.cell import CellStatus
+from minesweeper.cell import CellStatus, Coordinate
 
-from typing import Any, Optional
+from typing import Optional
 
 from threading import Semaphore
 
@@ -19,7 +19,7 @@ class Page:
 
     size: int
 
-    # all elements of the the page data should be of the same type and should
+    # all elements of the page data should be of the same type and should
     # be json serializable by the flask JSONEncoder:
     #   https://github.com/pallets/flask/blob/7620cb70dbcbf71bca651e6f2eef3cbb05999272/src/flask/json/__init__.py#L19
     data: list
@@ -65,7 +65,7 @@ class MemoryStore:
 
             return Page(page, size, games)
 
-    def set_cell_state(self, game_id: UUID, row: int, col: int, state: CellStatus) -> Optional[bool]:
+    def set_cell_state(self, game_id: UUID, coordinate: Coordinate, state: CellStatus) -> Optional[bool]:
         """Update teh status of a cell.
 
         This method only has a return type to allow it to specify that no game was found.
@@ -79,6 +79,6 @@ class MemoryStore:
             semaphore, game = self.games[game_id]
 
         with semaphore:
-            game.update_cell(row, col, state)
+            game.update_cell(coordinate, state)
 
         return True

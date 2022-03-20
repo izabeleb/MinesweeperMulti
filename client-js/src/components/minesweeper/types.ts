@@ -1,3 +1,5 @@
+import { Coordinate } from "../../api/types";
+
 /**
  * Enum specifying the state of a cell.
  */
@@ -8,8 +10,7 @@ export enum CellStatus {
 }
 
 export interface Cell {
-    row: number,
-    col: number,
+    coordinate: Coordinate
     adjacentMines: number,
     isMine: boolean,
     status: CellStatus,

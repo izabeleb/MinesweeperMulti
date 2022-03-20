@@ -3,7 +3,7 @@ import unittest
 import time
 
 from minesweeper.minefield import MineField
-from minesweeper.cell import Cell
+from minesweeper.cell import Cell, Coordinate
 
 
 class TestMinefieldInit(unittest.TestCase):
@@ -91,9 +91,9 @@ class TestMinefieldInit(unittest.TestCase):
 
         mine_field = MineField(rows=rows, cols=cols, mine_count=mine_count)
 
-        mine_field.set_mine(0, 1)
-        mine_field.set_mine(2, 2)
-        mine_field.set_mine(3, 0)
+        mine_field.set_mine(Coordinate(0, 1))
+        mine_field.set_mine(Coordinate(2, 2))
+        mine_field.set_mine(Coordinate(3, 0))
 
         self._assert_cell(mine_field.cells[0][0], False, 1)
         self._assert_cell(mine_field.cells[0][1], True, 0)
@@ -135,8 +135,8 @@ class TestMineField(unittest.TestCase):
         # 3 │ - - - - │
         #   └─────────┘
 
-        actual = sorted(self.mine_field.get_empty_connected(0, 0))
-        expected = sorted(list(itertools.chain(*[[(i, j) for j in range(self.cols)] for i in range(self.rows)])))
+        actual = sorted(self.mine_field.get_empty_connected(Coordinate(0, 0)))
+        expected = sorted(list(itertools.chain(*[[Coordinate(i, j) for j in range(self.cols)] for i in range(self.rows)])))
 
         self.assertListEqual(expected, actual)
 
@@ -149,22 +149,22 @@ class TestMineField(unittest.TestCase):
         # 3 │ 1 1 1 - │
         #   └─────────┘
 
-        self.mine_field.set_mine(1, 1)
-        self.mine_field.set_mine(2, 1)
+        self.mine_field.set_mine(Coordinate(1, 1))
+        self.mine_field.set_mine(Coordinate(2, 1))
 
-        actual = sorted(self.mine_field.get_empty_connected(0, 0))
+        actual = sorted(self.mine_field.get_empty_connected(Coordinate(0, 0)))
         expected = sorted([
-            (0, 0),
+            Coordinate(0, 0),
         ])
 
         self.assertListEqual(expected, actual)
 
-        actual = sorted(self.mine_field.get_empty_connected(0, 3))
+        actual = sorted(self.mine_field.get_empty_connected(Coordinate(0, 3)))
         expected = sorted([
-            (0, 2), (0, 3),
-            (1, 2), (1, 3),
-            (2, 2), (2, 3),
-            (3, 2), (3, 3),
+            Coordinate(0, 2), Coordinate(0, 3),
+            Coordinate(1, 2), Coordinate(1, 3),
+            Coordinate(2, 2), Coordinate(2, 3),
+            Coordinate(3, 2), Coordinate(3, 3),
         ])
 
         self.assertListEqual(expected, actual)

@@ -1,6 +1,6 @@
 import random
 
-from minesweeper.cell import Cell, CellStatus
+from minesweeper.cell import Cell, CellStatus, Coordinate
 
 
 class MineField:
@@ -15,7 +15,7 @@ class MineField:
         self.mine_count = mine_count
 
         self.cells = [
-            [Cell(i, j) for j in range(self.rows)]
+            [Cell(Coordinate(i, j)) for j in range(self.rows)]
             for i in range(self.cols)
         ]
 
@@ -28,61 +28,60 @@ class MineField:
             row = flat_coordinate // self.rows
             col = flat_coordinate % self.cols
 
-            self.set_mine(row, col)
+            self.set_mine(Coordinate(row, col))
 
-    def _get_adjacent_cells(self, row: int, col: int) -> list[Cell]:
+    def _get_adjacent_cells(self, coordinate: Coordinate) -> list[Cell]:
         cells = list()
 
         for i in range(-1, 2):
-            if not 0 <= row + i < self.rows:
+            if not 0 <= coordinate.row + i < self.rows:
                 continue
 
             for j in range(-1, 2):
-                if i == j == 0 or not 0 <= col + j < self.cols:
+                if i == j == 0 or not 0 <= coordinate.col + j < self.cols:
                     continue
 
-                cells.append(self.cells[row + i][col + j])
+                cells.append(self.cells[coordinate.row + i][coordinate.col + j])
 
         return cells
 
-    def get_empty_connected(self, row: int, col: int) -> list[tuple[int, int]]:
+    def get_empty_connected(self, coordinate: Coordinate) -> list[Coordinate]:
         """Retrieves a list of coordinates of cells which are empty, including the starting coordinate."""
-        safe_coordinates: list[tuple[int, int]] = list()
-        next_cells: set[Cell] = {self.cells[row][col]}
+        safe_coordinates: list[Coordinate] = list()
+        next_cells: set[Cell] = {self.cells[coordinate.row][coordinate.col]}
         visited_cells = set()
 
         while next_cells:
             cell = next_cells.pop()
-            coordinate = cell.get_coordinate()
 
             if not cell.is_mine:
-                safe_coordinates.append(coordinate)
+                safe_coordinates.append(cell.coordinate)
 
                 if cell.adjacent_mines == 0:
-                    next_cells |= {adjacent_cell for adjacent_cell in self._get_adjacent_cells(coordinate[0], coordinate[1])
+                    next_cells |= {adjacent_cell for adjacent_cell in self._get_adjacent_cells(cell.coordinate)
                                    if adjacent_cell not in visited_cells}
 
             visited_cells.add(cell)
 
         return safe_coordinates
 
-    def set_mine(self, row: int, col: int):
-        if not self.cells[row][col].is_mine:
-            self.cells[row][col].is_mine = True
+    def set_mine(self, coordinate: Coordinate):
+        if not self.cells[coordinate.row][coordinate.col].is_mine:
+            self.cells[coordinate.row][coordinate.col].is_mine = True
 
-            for cell in self._get_adjacent_cells(row, col):
+            for cell in self._get_adjacent_cells(coordinate):
                 cell.adjacent_mines += 1
 
-    def get_closed_mines(self) -> list[tuple[int, int]]:
+    def get_closed_mines(self) -> list[Coordinate]:
         """Get a list of the locations any closed cells which are mines."""
-        locations: list[tuple[int, int]] = list()
+        locations: list[Coordinate] = list()
 
         for i in range(self.rows):
             for j in range(self.cols):
                 cell = self.cells[i][j]
 
                 if cell.is_mine:
-                    locations.append((cell.row, cell.col))
+                    locations.append(cell.coordinate)
 
         return locations
 
@@ -94,3 +93,6 @@ class MineField:
                 if not cell.is_mine and cell.status != CellStatus.Opened:
                     return False
         return True
+
+    def get_cell(self, coordinate: Coordinate) -> Cell:
+        return self.cells[coordinate.row][coordinate.col]

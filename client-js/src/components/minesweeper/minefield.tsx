@@ -1,4 +1,5 @@
 import React from 'react';
+import { Coordinate } from '../../api/types';
 import { CellCommponent } from './cell';
 import { Cell, CellStatus } from './types';
 
@@ -9,7 +10,7 @@ interface MinefieldProps {
 
     isActive: boolean,
 
-    cellUpdater: (rol: number, col: number, status: CellStatus) => void
+    cellUpdater: (coordinate: Coordinate, status: CellStatus) => void
 }
 
 interface MinefieldState { }
