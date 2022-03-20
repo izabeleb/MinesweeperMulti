@@ -1,0 +1,6 @@
+__pycache__
+venv
+tests
+README.md
+Makefile
+Dockerfile
