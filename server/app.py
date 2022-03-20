@@ -13,7 +13,7 @@ from minesweeper.api.requests import (
 
 from minesweeper.cell import CellChange
 
-from typing import Optional, Any
+from typing import Optional
 
 import datetime
 
@@ -119,4 +119,8 @@ def run():
 
 
 if __name__ == "__main__":
-    minesweeper.run.run()
+    # from minesweeper.cell import Coordinate
+    # import json
+    # print(json.dumps(Coordinate(0, 0)))
+
+    run()

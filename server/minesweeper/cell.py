@@ -2,13 +2,16 @@ from dataclasses import dataclass, field
 
 import enum
 from enum import Enum
-from typing import NamedTuple
 
 
-class Coordinate(NamedTuple):
+@dataclass
+class Coordinate:
     """A basic wrapper around a coordinate on a 2-d plane."""
     row: int
     col: int
+
+    def __hash__(self):
+        return hash((self.row, self.col))
 
 
 @enum.unique
@@ -34,4 +37,4 @@ class Cell:
     status: CellStatus = field(default=CellStatus.Closed, init=False)
 
     def __hash__(self):
-        return self.coordinate.__hash__()
+        return hash(self.coordinate)

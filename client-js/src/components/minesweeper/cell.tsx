@@ -2,6 +2,7 @@ import _ from 'lodash';
 import React from 'react';
 import { BsFlagFill, BsSquare } from 'react-icons/bs';
 import { FaBomb } from 'react-icons/fa';
+import { Coordinate } from '../../api/types';
 import { Cell, CellStatus } from './types';
 
 interface CellProps {
@@ -11,7 +12,7 @@ interface CellProps {
 
     isActive: boolean,
 
-    cellUpdater: (rol: number, col: number, status: CellStatus) => void
+    cellUpdater: (coordinate: Coordinate, status: CellStatus) => void
 }
 
 interface CellState { }
@@ -30,13 +31,13 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
     flagCell = () => {
         switch (this.props.cell.status) {
             case CellStatus.Flagged:
-                this.props.cellUpdater(this.props.cell.row, this.props.cell.col, CellStatus.Closed);
+                this.props.cellUpdater(this.props.cell.coordinate, CellStatus.Closed);
                 break;
             case CellStatus.Opened:
                 // do nothing...
                 break;
             case CellStatus.Closed:
-                this.props.cellUpdater(this.props.cell.row, this.props.cell.col, CellStatus.Flagged);
+                this.props.cellUpdater(this.props.cell.coordinate, CellStatus.Flagged);
                 break;
         }
     }
@@ -51,7 +52,7 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
                 // do nothing...
                 break;
             case CellStatus.Closed:
-                this.props.cellUpdater(this.props.cell.row, this.props.cell.col, CellStatus.Opened);
+                this.props.cellUpdater(this.props.cell.coordinate, CellStatus.Opened);
                 break;
         }
     }
@@ -113,7 +114,7 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
 
                 break;
             case CellStatus.Closed:
-                if (! isActive) {
+                if (! isActive && isMine) {
                     icon = <FaBomb className="cell_icon" size={iconSize} color='red' />
                 }
 

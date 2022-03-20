@@ -1,5 +1,5 @@
 import { Cell, CellStatus } from "../components/minesweeper/types";
-import { Epoch, GameEvent, GameData, IPage, } from './types';
+import { Epoch, GameEvent, GameData, IPage, Coordinate, } from './types';
 import _ from 'lodash';
 
 /**
@@ -215,15 +215,14 @@ export class MinesweeperService {
      * @param col the column of the target cell.
      * @param status the new status for  the cell.
      */
-    async patchField(id: string, row: number, col: number, status: CellStatus) {
+    async patchField(id: string, coordinate: Coordinate, status: CellStatus) {
         await fetch(patchGameFieldEndpoint(this.base_url, id), {
             method: "PATCH",
             headers: {
                 'Content-Type': 'application/json'
               },
             body: JSON.stringify({
-                'row': row,
-                'col': col,
+                'coordinate': coordinate,
                 'status': status,
             })
         });

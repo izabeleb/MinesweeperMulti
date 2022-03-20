@@ -15,9 +15,13 @@ export enum EventType {
     GameLoss = "game_loss",
 }
 
-export interface CellChange {
+export interface Coordinate {
     row: number,
     col: number,
+}
+
+export interface CellChange {
+    coordinate: Coordinate,
     status: CellStatus,
 }
 
