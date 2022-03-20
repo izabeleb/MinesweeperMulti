@@ -7,6 +7,8 @@ interface MinefieldProps {
 
     isFlagMode: boolean,
 
+    isActive: boolean,
+
     cellUpdater: (rol: number, col: number, status: CellStatus) => void
 }
 
@@ -20,7 +22,7 @@ export class MinefieldCommponent extends React.Component<MinefieldProps, Minefie
     }
     
     render() {
-        let cells = this.props.cells;
+        let { cells, isActive } = this.props;
 
         return <table className="window minefield">
             <tbody>
@@ -30,7 +32,11 @@ export class MinefieldCommponent extends React.Component<MinefieldProps, Minefie
                             {
                                 row.map((cell: Cell, j: number) =>
                                     <td key={j}>
-                                        <CellCommponent cellUpdater={this.props.cellUpdater} cell={cell} isFlagMode={this.props.isFlagMode} />
+                                        <CellCommponent
+                                            cellUpdater={this.props.cellUpdater}
+                                            cell={cell}
+                                            isFlagMode={this.props.isFlagMode}
+                                            isActive={isActive} />
                                     </td>
                                 )
                             }

@@ -22,27 +22,13 @@ class MineField:
         self._establish_mines()
 
     def _establish_mines(self):
-        mine_count = 0
+        rand_range = random.sample(range(self.cols * self.rows), k=self.mine_count)
 
-        while mine_count < self.mine_count:
-            row = random.randrange(self.rows)
-            col = random.randrange(self.cols)
+        for flat_coordinate in rand_range:
+            row = flat_coordinate // self.rows
+            col = flat_coordinate % self.cols
 
-            if not self.cells[row][col].is_mine:
-                self.set_mine(row, col)
-
-                mine_count += 1
-
-        # todo: above random algorithm has the potential for taking a long time
-        #   when generating large mine fields with a high coverage, try finding
-        #   random generator with no repeats allowing for O(n) rather than O(∞)
-        # for i in range(self.mine_count):
-        #     # generate random "flat coordinates" without replacement, a flat
-        #     # coordinate is a 2D coordinate flattened to a single number
-        #     flat_coordinate = random.sample(range(self.cols * self.rows), k=1)[0]
-        #
-        #     row = flat_coordinate // self.rows
-        #     col = flat_coordinate % self.cols
+            self.set_mine(row, col)
 
     def _get_adjacent_cells(self, row: int, col: int) -> list[Cell]:
         cells = list()
@@ -86,3 +72,25 @@ class MineField:
 
             for cell in self._get_adjacent_cells(row, col):
                 cell.adjacent_mines += 1
+
+    def get_closed_mines(self) -> list[tuple[int, int]]:
+        """Get a list of the locations any closed cells which are mines."""
+        locations: list[tuple[int, int]] = list()
+
+        for i in range(self.rows):
+            for j in range(self.cols):
+                cell = self.cells[i][j]
+
+                if cell.is_mine:
+                    locations.append((cell.row, cell.col))
+
+        return locations
+
+    def is_field_clear(self) -> bool:
+        """Determine if the MineField is clear (all non-mine cells are opened)."""
+        for i in range(self.rows):
+            for j in range(self.cols):
+                cell = self.cells[i][j]
+                if not cell.is_mine and cell.status != CellStatus.Opened:
+                    return False
+        return True

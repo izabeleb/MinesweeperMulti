@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React from 'react';
 import { BsFlagFill, BsSquare } from 'react-icons/bs';
 import { FaBomb } from 'react-icons/fa';
@@ -7,6 +8,8 @@ interface CellProps {
     cell: Cell,
 
     isFlagMode: boolean,
+
+    isActive: boolean,
 
     cellUpdater: (rol: number, col: number, status: CellStatus) => void
 }
@@ -66,7 +69,9 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
     }
 
     shouldComponentUpdate(nextProps: CellProps) {
-        return nextProps.cell.status !== this.props.cell.status
+        // we don't to re-render every time we change flagging modes since there
+        // will be no visual change to the cell
+        return nextProps.cell.status !== this.props.cell.status || nextProps.isActive != this.props.isActive
     }
 
     /**
@@ -81,6 +86,7 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
     }
 
     render() {
+        let { isActive } = this.props;
         let { status, isMine, adjacentMines } = this.props.cell;
 
         let iconSize='20px'
@@ -107,9 +113,19 @@ export class CellCommponent extends React.Component<CellProps, CellState> {
 
                 break;
             case CellStatus.Closed:
+                if (! isActive) {
+                    icon = <FaBomb className="cell_icon" size={iconSize} color='red' />
+                }
+
                 break;
         }
 
-        return <button onClick={this.handleOnClick} onContextMenu={this.handleOnContextmenu} className={buttonClassName}>{icon}</button>
+        return <button
+            disabled={! isActive}
+            onClick={this.handleOnClick}
+            onContextMenu={this.handleOnContextmenu}
+            className={buttonClassName}>
+                {icon}
+            </button>
     }
 }

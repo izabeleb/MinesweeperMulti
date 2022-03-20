@@ -135,7 +135,7 @@ export class MinesweeperService {
         for (let i=0; i < data.length; i++){
           data[i] = this._snakeToCamelObject(data[i]);
         }
-        //console.log(data);
+
         page.data = data;
         return page;
     }

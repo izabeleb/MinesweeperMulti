@@ -18,6 +18,8 @@ interface GameState {
     isFlagMode: boolean,
 
     isGameOver: boolean,
+
+    isGameWon: boolean,
 }
 
 /**
@@ -26,7 +28,7 @@ interface GameState {
 const POLL_INTERVAL: number = 200;
 
 export class GameComponent extends React.Component<GameProps, GameState> {
-    private intervalId?: NodeJS.Timeout;
+    private getEventsInterval?: NodeJS.Timeout;
     private lastEventOccurence?: Epoch;
 
     constructor(props: GameProps) {
@@ -34,7 +36,8 @@ export class GameComponent extends React.Component<GameProps, GameState> {
 
         this.state = {
             isFlagMode: false,
-            isGameOver: false, // todo: verify with rest call
+            isGameOver: false,
+            isGameWon: false,
         }
     }
 
@@ -44,8 +47,7 @@ export class GameComponent extends React.Component<GameProps, GameState> {
 
     handleNewEvents(events: GameEvent[]) {
         this.setState(previousState => {
-            let cells = previousState.cells;
-            let is_game_over: boolean = previousState.isGameOver;
+            let { cells, isGameOver, isGameWon } = previousState;
 
             if (cells !== undefined) {
                 cells = _.cloneDeep(cells);
@@ -60,8 +62,15 @@ export class GameComponent extends React.Component<GameProps, GameState> {
                             cells![change.row][change.col].status = change.status;
 
                             break;
-                        case EventType.GameEnd:
-                            is_game_over = true;
+                        case EventType.GameWin:
+                            isGameOver = true;
+                            isGameWon = true;
+
+                            break;
+                        case EventType.GameLoss:
+                            isGameOver = true;
+                            isGameWon = false;
+
                             break;
                     }
                 });
@@ -71,7 +80,12 @@ export class GameComponent extends React.Component<GameProps, GameState> {
                 }
             }
 
-            return { cells: cells, isGameOver: is_game_over }
+            if (isGameOver && this.getEventsInterval) {
+                clearInterval(this.getEventsInterval);
+                this.getEventsInterval = undefined;
+            }
+
+            return { cells: cells, isGameOver: isGameOver, isGameWon: isGameWon }
         });
     }
 
@@ -81,7 +95,7 @@ export class GameComponent extends React.Component<GameProps, GameState> {
                 .then(cells => this.setState({cells: cells}));
         }
 
-        this.intervalId = setInterval(() => {
+        this.getEventsInterval = setInterval(() => {
             this.props.service.getGameEvents(this.props.gameData.id, this.lastEventOccurence).then(events => {
                 if (events.length !== 0) {
                     this.lastEventOccurence = events[events.length - 1].occurredAt;
@@ -92,16 +106,28 @@ export class GameComponent extends React.Component<GameProps, GameState> {
     }
 
     componentWillUnmount() {
-        if (this.intervalId !== undefined) {
-            clearInterval(this.intervalId);
+        if (this.getEventsInterval) {
+            clearInterval(this.getEventsInterval);
         }
     }
 
     render() {
-        return  <div>
+        let { isGameOver, isGameWon } = this.state;
+        let header = null;
 
-          <div className="minefield-scroll">
-          { this.state.cells !== undefined ? <MinefieldCommponent cellUpdater={this.updateCell} cells={this.state.cells} isFlagMode={this.state.isFlagMode} /> : null }
+        if (isGameOver) {
+            if (isGameWon) {
+                header = <div>You Won :)</div>
+            } else {
+                header = <div>You Lost :(</div>
+            }
+        }
+
+        return <div>
+            <div className="minefield-scroll">
+                {header}
+
+                { this.state.cells !== undefined ? <MinefieldCommponent cellUpdater={this.updateCell} cells={this.state.cells} isFlagMode={this.state.isFlagMode} isActive={! isGameOver} /> : null }
           </div>
         </div>
     }

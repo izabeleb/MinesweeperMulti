@@ -39,9 +39,9 @@ export function GameRoute(props: GameRouteProps): JSX.Element {
     } else if (gameData !== undefined) {
         return (
           <div>
-          <div className="menu">
-          <Link className="menu-header" to="/">MultiMine</Link>
-          </div>
+              <div className="menu">
+                  <Link className="menu-header" to="/">MultiMine</Link>
+              </div>
           <div className="minefield-wrapper">
         <GameComponent service={props.service} gameData={gameData} />
         </div>

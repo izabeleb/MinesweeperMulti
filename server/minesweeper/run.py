@@ -25,7 +25,7 @@ class MinesweeperEncoder(flask.json.JSONEncoder):
         return super().default(obj)
 
 
-def create_app(store: Optional[MemoryStore] = None):
+def create_app(store: Optional[MemoryStore] = None) -> Flask:
     app = Flask(__name__)
 
     CORS(app)

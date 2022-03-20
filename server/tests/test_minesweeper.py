@@ -1,6 +1,6 @@
 import itertools
-
 import unittest
+import time
 
 from minesweeper.minefield import MineField
 from minesweeper.cell import Cell
@@ -33,6 +33,22 @@ class TestMinefieldInit(unittest.TestCase):
         expected = mine_count
 
         self.assertEqual(expected, actual)
+
+    def test_large_initialization(self):
+        rows = 999
+        cols = 999
+        mine_count = rows * cols
+
+        start = time.time()
+        mine_field = MineField(rows=rows, cols=cols, mine_count=mine_count)
+        delta = time.time() - start
+
+        actual = self._count_mines(mine_field)
+        expected = mine_count
+
+        self.assertEqual(expected, actual)
+        self.assertLess(delta, 2.5,
+                        msg="This may fail if there was no '__pycache__' so if it fails on the first attempt run again")
 
     def test_test_small_full_mine_field(self):
         rows = 10
