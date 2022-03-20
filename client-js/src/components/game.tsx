@@ -127,7 +127,7 @@ export class GameComponent extends React.Component<GameProps, GameState> {
             <div className="minefield-scroll">
                 {header}
 
-                { this.state.cells !== undefined ? <MinefieldCommponent cellUpdater={this.updateCell} cells={this.state.cells} isFlagMode={this.state.isFlagMode} /> : null }
+                { this.state.cells !== undefined ? <MinefieldCommponent cellUpdater={this.updateCell} cells={this.state.cells} isFlagMode={this.state.isFlagMode} isActive={! isGameOver} /> : null }
           </div>
         </div>
     }
