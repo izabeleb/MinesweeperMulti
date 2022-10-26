@@ -33,10 +33,12 @@ class TestMinefieldInit(unittest.TestCase):
         expected = mine_count
 
         self.assertEqual(expected, actual)
+        self.assertEqual(rows, len(mine_field.cells))
+        self.assertEqual(cols, len(mine_field.cells[0]))
 
     def test_large_initialization(self):
-        rows = 999
-        cols = 999
+        rows = 250
+        cols = 250
         mine_count = rows * cols
 
         start = time.time()
@@ -47,10 +49,9 @@ class TestMinefieldInit(unittest.TestCase):
         expected = mine_count
 
         self.assertEqual(expected, actual)
-        self.assertLess(delta, 2.5,
-                        msg="This may fail if there was no '__pycache__' so if it fails on the first attempt run again")
+        self.assertLess(delta, 2.5)
 
-    def test_test_small_full_mine_field(self):
+    def test_small_full_mine_field(self):
         rows = 10
         cols = 10
         mine_count = rows * cols
@@ -61,6 +62,22 @@ class TestMinefieldInit(unittest.TestCase):
         expected = mine_count
 
         self.assertEqual(expected, actual)
+        self.assertEqual(rows, len(mine_field.cells))
+        self.assertEqual(cols, len(mine_field.cells[0]))
+
+    def test_correct_non_square(self):
+        rows = 4
+        cols = 2
+        mine_count = 0
+
+        mine_field = MineField(rows=rows, cols=cols, mine_count=mine_count)
+
+        actual = self._count_mines(mine_field)
+        expected = mine_count
+
+        self.assertEqual(expected, actual)
+        self.assertEqual(rows, len(mine_field.cells))
+        self.assertEqual(cols, len(mine_field.cells[0]))
 
     def test_too_many_mines(self):
         rows = 10

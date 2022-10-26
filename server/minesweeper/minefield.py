@@ -15,8 +15,8 @@ class MineField:
         self.mine_count = mine_count
 
         self.cells = [
-            [Cell(Coordinate(i, j)) for j in range(self.rows)]
-            for i in range(self.cols)
+            [Cell(Coordinate(i, j)) for j in range(self.cols)]
+            for i in range(self.rows)
         ]
 
         self._establish_mines()
@@ -34,11 +34,11 @@ class MineField:
         cells = list()
 
         for i in range(-1, 2):
-            if not 0 <= coordinate.row + i < self.rows:
+            if not (0 <= coordinate.row + i < self.rows):
                 continue
 
             for j in range(-1, 2):
-                if i == j == 0 or not 0 <= coordinate.col + j < self.cols:
+                if i == j == 0 or not (0 <= coordinate.col + j < self.cols):
                     continue
 
                 cells.append(self.cells[coordinate.row + i][coordinate.col + j])
