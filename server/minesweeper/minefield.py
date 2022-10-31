@@ -25,7 +25,7 @@ class MineField:
         rand_range = random.sample(range(self.cols * self.rows), k=self.mine_count)
 
         for flat_coordinate in rand_range:
-            row = flat_coordinate // self.rows
+            row = flat_coordinate // self.cols
             col = flat_coordinate % self.cols
 
             self.set_mine(Coordinate(row, col))

@@ -68,7 +68,7 @@ class TestMinefieldInit(unittest.TestCase):
     def test_correct_non_square(self):
         rows = 4
         cols = 2
-        mine_count = 0
+        mine_count = rows * cols
 
         mine_field = MineField(rows=rows, cols=cols, mine_count=mine_count)
 
